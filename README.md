@@ -1,8 +1,8 @@
-# 🦜️🔗 LangChain {partner}
+# 🦜️🔗 LangChain 🤝 Amazon Nova
 
-This repository contains 1 package with {partner} integrations with LangChain:
+This repository contains 1 package with Nova integrations with LangChain:
 
-- [langchain-{package_lower}](https://pypi.org/project/langchain-{package_lower}/)
+- [langchain-nova](https://pypi.org/project/langchain-nova/)
 
 ## Initial Repo Checklist (Remove this section after completing)
 
