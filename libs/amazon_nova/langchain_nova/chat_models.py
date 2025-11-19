@@ -11,6 +11,7 @@ from typing import (
     Union,
 )
 
+import httpx
 import openai
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
@@ -160,11 +161,15 @@ class ChatNova(BaseChatModel):
             else:
                 api_key_str = None
 
+            # Create httpx client with no compression to avoid zstd decompression issues
+            http_client = httpx.Client(headers={"Accept-Encoding": "identity"})
+
             self.client = openai.OpenAI(
                 api_key=api_key_str,
                 base_url=self.base_url,
                 timeout=self.timeout,
                 max_retries=self.max_retries,
+                http_client=http_client,
             )
 
         if self.async_client is None:
@@ -173,11 +178,15 @@ class ChatNova(BaseChatModel):
             else:
                 api_key_str = None
 
+            # Create httpx client with no compression to avoid zstd decompression issues
+            http_client = httpx.AsyncClient(timeout=httpx.Timeout(60))
+
             self.async_client = openai.AsyncOpenAI(
                 api_key=api_key_str,
                 base_url=self.base_url,
                 timeout=self.timeout,
                 max_retries=self.max_retries,
+                http_client=http_client,
             )
 
         return self
@@ -381,7 +390,8 @@ class ChatNova(BaseChatModel):
         if stop is not None:
             params["stop"] = stop
 
-        async for chunk in self.async_client.chat.completions.create(**params):
+        stream = await self.async_client.chat.completions.create(**params)
+        async for chunk in stream:
             if not chunk.choices:
                 continue
 
