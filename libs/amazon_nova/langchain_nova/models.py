@@ -41,7 +41,7 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
     ),
     "nova-lite-v1": ModelCapabilities(
         supports_text=True,
-        supports_vision=False,
+        supports_vision=True,
         supports_tool_calling=True,
         supports_image_generation=False,
         supports_streaming=True,
@@ -50,14 +50,13 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
     ),
     "nova-pro-v1": ModelCapabilities(
         supports_text=True,
-        supports_vision=False,
+        supports_vision=True,
         supports_tool_calling=True,
         supports_image_generation=False,
         supports_streaming=True,
         max_context_tokens=300000,
         modality="text",
     ),
-
     # Multimodal models (vision input)
     "nova-premier-v1": ModelCapabilities(
         supports_text=True,
@@ -68,7 +67,6 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
         max_context_tokens=300000,
         modality="multimodal",
     ),
-
     # Canvas models (image generation)
     "nova-canvas-v1": ModelCapabilities(
         supports_text=True,
@@ -79,7 +77,6 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
         max_context_tokens=None,
         modality="image-generation",
     ),
-
     # Research models
     "nova-deep-research-v1": ModelCapabilities(
         supports_text=True,
