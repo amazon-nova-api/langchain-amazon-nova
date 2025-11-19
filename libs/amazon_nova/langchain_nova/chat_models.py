@@ -32,6 +32,8 @@ from pydantic import (
     model_validator,
 )
 
+from langchain_nova.models import get_model_capabilities, validate_tool_calling
+
 
 def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
     """Convert a tool to Nova's tool format.
@@ -201,7 +203,7 @@ class ChatNova(BaseChatModel):
     )
 
     @model_validator(mode="after")
-    def validate_environment(self) -> "ChatNova":
+    def validate_environment(self) -> ChatNova:
         """Validate environment and create OpenAI client."""
         if self.client is None:
             if self.api_key:
@@ -242,6 +244,13 @@ class ChatNova(BaseChatModel):
         return self
 
     @property
+    def capabilities(self):
+        """Get capabilities for the current model."""
+        from langchain_nova.models import get_model_capabilities
+
+        return get_model_capabilities(self.model_name)
+
+    @property
     def _llm_type(self) -> str:
         """Return type of chat model."""
         return "nova-chat"
@@ -264,17 +273,26 @@ class ChatNova(BaseChatModel):
     def bind_tools(
         self,
         tools: List[Any],
+        strict: bool = True,
         **kwargs: Any,
-    ) -> "ChatNova":
+    ) -> ChatNova:
         """Bind tools to the model.
 
         Args:
             tools: List of tools to bind. Can be LangChain tools, Pydantic models, or dicts.
+            strict: If True, validate that the model supports tool calling. Default True.
             **kwargs: Additional arguments passed to the model.
 
         Returns:
             New ChatNova instance with tools bound.
+
+        Raises:
+            ValueError: If strict=True and the model doesn't support tool calling.
         """
+        # Validate model supports tool calling if strict mode
+        if strict:
+            validate_tool_calling(self.model_name)
+
         formatted_tools = [convert_to_nova_tool(tool) for tool in tools]
         return self.bind(tools=formatted_tools, **kwargs)
 
