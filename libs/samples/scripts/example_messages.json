@@ -1,0 +1,22 @@
+[
+  {
+    "role": "user",
+    "content": "Tell me a lovely story"
+  },
+  {
+    "role": "assistant",
+    "content": "Once upon a time, in a quiet forest, a little fox found a magical key..."
+  },
+  {
+    "role": "user",
+    "content": "What did the key unlock?"
+  },
+  {
+    "role": "assistant",
+    "content": "The key unlocked an ancient tree that held memories from all the creatures of the forest."
+  },
+  {
+    "role": "user",
+    "content": "Did the fox share those memories?"
+  }
+]
