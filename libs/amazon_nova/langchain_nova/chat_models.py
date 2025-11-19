@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from typing import (
     Any,
@@ -18,7 +19,7 @@ from langchain_core.callbacks import (
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.utils import (
     convert_to_secret_str,
@@ -30,6 +31,53 @@ from pydantic import (
     SecretStr,
     model_validator,
 )
+
+
+def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
+    """Convert a tool to Nova's tool format.
+
+    Nova uses OpenAI-compatible tool format. This function handles conversion
+    from LangChain tools, Pydantic models, or raw dicts.
+
+    Args:
+        tool: Tool to convert. Can be:
+            - LangChain Tool (with .name, .description, .args_schema)
+            - Pydantic BaseModel
+            - Dict with OpenAI tool format
+
+    Returns:
+        Dict in OpenAI/Nova tool format:
+        {
+            "type": "function",
+            "function": {
+                "name": str,
+                "description": str,
+                "parameters": {...}  # JSON Schema
+            }
+        }
+    """
+    # If already in dict format, return as-is
+    if isinstance(tool, dict):
+        return tool
+
+    # Handle LangChain tools
+    if hasattr(tool, "name") and hasattr(tool, "description"):
+        from langchain_core.utils.function_calling import convert_to_openai_tool
+
+        return convert_to_openai_tool(tool)
+
+    # Handle Pydantic models
+    from pydantic import BaseModel
+
+    if isinstance(tool, type) and issubclass(tool, BaseModel):
+        from langchain_core.utils.function_calling import convert_to_openai_tool
+
+        return convert_to_openai_tool(tool)
+
+    # Fallback to langchain converter
+    from langchain_core.utils.function_calling import convert_to_openai_tool
+
+    return convert_to_openai_tool(tool)
 
 
 class ChatNova(BaseChatModel):
@@ -179,7 +227,9 @@ class ChatNova(BaseChatModel):
                 api_key_str = None
 
             # Create httpx client with no compression to avoid zstd decompression issues
-            http_client = httpx.AsyncClient(timeout=httpx.Timeout(60))
+            http_client = httpx.AsyncClient(
+                headers={"Accept-Encoding": "identity"}, timeout=httpx.Timeout(60)
+            )
 
             self.async_client = openai.AsyncOpenAI(
                 api_key=api_key_str,
@@ -211,7 +261,30 @@ class ChatNova(BaseChatModel):
         """Return secrets for serialization."""
         return {"api_key": "NOVA_API_KEY"}
 
-    def _convert_messages_to_openai_format(
+    def bind_tools(
+        self,
+        tools: List[Any],
+        **kwargs: Any,
+    ) -> "ChatNova":
+        """Bind tools to the model.
+
+        Args:
+            tools: List of tools to bind. Can be LangChain tools, Pydantic models, or dicts.
+            **kwargs: Additional arguments passed to the model.
+
+        Returns:
+            New ChatNova instance with tools bound.
+        """
+        formatted_tools = [convert_to_nova_tool(tool) for tool in tools]
+        return self.bind(tools=formatted_tools, **kwargs)
+
+    def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
+        """Not implemented yet for Nova."""
+        raise NotImplementedError(
+            "with_structured_output is not yet implemented for ChatNova"
+        )
+
+    def _convert_messages_to_nova_format(
         self, messages: List[BaseMessage]
     ) -> List[Dict[str, Any]]:
         """Convert LangChain messages to OpenAI format."""
@@ -227,12 +300,44 @@ class ChatNova(BaseChatModel):
             else:
                 role = "user"
 
-            openai_messages.append(
-                {
-                    "role": role,
-                    "content": message.content,
-                }
-            )
+            msg_dict: Dict[str, Any] = {
+                "role": role,
+            }
+
+            # Only set content if it's not empty
+            # Tool calls might have empty content
+            if message.content:
+                msg_dict["content"] = message.content
+            elif not (
+                message.type == "ai"
+                and hasattr(message, "tool_calls")
+                and message.tool_calls
+            ):
+                # If content is empty and it's not an AI message with tool calls, set empty string
+                msg_dict["content"] = ""
+
+            # Handle tool calls in AI messages
+            if message.type == "ai" and hasattr(message, "tool_calls"):
+                if message.tool_calls:
+                    msg_dict["tool_calls"] = [
+                        {
+                            "id": tc.get("id", ""),
+                            "type": "function",
+                            "function": {
+                                "name": tc["name"],
+                                "arguments": json.dumps(tc.get("args", {}))
+                                if isinstance(tc.get("args"), dict)
+                                else tc.get("args", ""),
+                            },
+                        }
+                        for tc in message.tool_calls
+                    ]
+
+            # Handle tool message IDs
+            if isinstance(message, ToolMessage):
+                msg_dict["tool_call_id"] = message.tool_call_id
+
+            openai_messages.append(msg_dict)
 
         return openai_messages
 
@@ -244,7 +349,7 @@ class ChatNova(BaseChatModel):
         **kwargs: Any,
     ) -> ChatResult:
         """Generate chat completion."""
-        openai_messages = self._convert_messages_to_openai_format(messages)
+        openai_messages = self._convert_messages_to_nova_format(messages)
 
         params = {
             "model": self.model_name,
@@ -262,13 +367,38 @@ class ChatNova(BaseChatModel):
 
         response = self.client.chat.completions.create(**params)
 
-        message = AIMessage(
-            content=response.choices[0].message.content or "",
-            response_metadata={
+        choice = response.choices[0]
+        message_data: Dict[str, Any] = {
+            "content": choice.message.content or "",
+            "response_metadata": {
                 "model": response.model,
-                "finish_reason": response.choices[0].finish_reason,
+                "finish_reason": choice.finish_reason,
             },
-        )
+        }
+
+        # Handle tool calls
+        if hasattr(choice.message, "tool_calls") and choice.message.tool_calls:
+            message_data["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "name": tc.function.name,
+                    "args": json.loads(tc.function.arguments)
+                    if tc.function.arguments
+                    else {},
+                }
+                for tc in choice.message.tool_calls
+            ]
+
+        # Handle function calls (legacy format)
+        if hasattr(choice.message, "function_call") and choice.message.function_call:
+            message_data["additional_kwargs"] = {
+                "function_call": {
+                    "name": choice.message.function_call.name,
+                    "arguments": choice.message.function_call.arguments,
+                }
+            }
+
+        message = AIMessage(**message_data)
 
         # Add usage metadata if available
         if hasattr(response, "usage") and response.usage:
@@ -289,7 +419,7 @@ class ChatNova(BaseChatModel):
         **kwargs: Any,
     ) -> ChatResult:
         """Async generate chat completion."""
-        openai_messages = self._convert_messages_to_openai_format(messages)
+        openai_messages = self._convert_messages_to_nova_format(messages)
 
         params = {
             "model": self.model_name,
@@ -307,13 +437,38 @@ class ChatNova(BaseChatModel):
 
         response = await self.async_client.chat.completions.create(**params)
 
-        message = AIMessage(
-            content=response.choices[0].message.content or "",
-            response_metadata={
+        choice = response.choices[0]
+        message_data: Dict[str, Any] = {
+            "content": choice.message.content or "",
+            "response_metadata": {
                 "model": response.model,
-                "finish_reason": response.choices[0].finish_reason,
+                "finish_reason": choice.finish_reason,
             },
-        )
+        }
+
+        # Handle tool calls
+        if hasattr(choice.message, "tool_calls") and choice.message.tool_calls:
+            message_data["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "name": tc.function.name,
+                    "args": json.loads(tc.function.arguments)
+                    if tc.function.arguments
+                    else {},
+                }
+                for tc in choice.message.tool_calls
+            ]
+
+        # Handle function calls (legacy format)
+        if hasattr(choice.message, "function_call") and choice.message.function_call:
+            message_data["additional_kwargs"] = {
+                "function_call": {
+                    "name": choice.message.function_call.name,
+                    "arguments": choice.message.function_call.arguments,
+                }
+            }
+
+        message = AIMessage(**message_data)
 
         # Add usage metadata if available
         if hasattr(response, "usage") and response.usage:
@@ -334,7 +489,7 @@ class ChatNova(BaseChatModel):
         **kwargs: Any,
     ) -> Any:
         """Stream chat completion."""
-        openai_messages = self._convert_messages_to_openai_format(messages)
+        openai_messages = self._convert_messages_to_nova_format(messages)
 
         params = {
             "model": self.model_name,
@@ -374,7 +529,7 @@ class ChatNova(BaseChatModel):
         **kwargs: Any,
     ) -> Any:
         """Async stream chat completion."""
-        openai_messages = self._convert_messages_to_openai_format(messages)
+        openai_messages = self._convert_messages_to_nova_format(messages)
 
         params = {
             "model": self.model_name,

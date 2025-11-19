@@ -10,6 +10,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+patterns = [
+    "langchain>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+]
 dev = [
     "ruff>=0.13.0",
 ]

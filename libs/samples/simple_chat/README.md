@@ -105,6 +105,36 @@ Options:
 - `--system-message MSG` - Customize system prompt
 - `--verbose` / `-v` - Enable detailed debug output
 
+### tool_use.py
+
+Function calling / tool use demonstrations.
+
+```bash
+python tool_use.py
+python tool_use.py --verbose
+```
+
+Shows:
+- Defining tools with `@tool` decorator
+- Binding tools to the model
+- Single tool call execution
+- Multiple parallel tool calls
+- Multi-turn tool conversations
+- Tool result handling
+
+Included tools:
+- `get_current_weather` - Get weather for a location
+- `get_current_time` - Get current time in timezone
+- `calculate` - Perform mathematical operations
+
+Examples in the script:
+1. Simple weather query with tool call
+2. Multiple tool calls (weather + time)
+3. Mathematical calculation via tools
+4. Multi-turn conversation with tools
+
+**Note:** Tool calling support depends on the Nova model being used. If the model doesn't support tools, it may respond directly without using them.
+
 ## Verbose Mode
 
 All examples support `-v` or `--verbose` flag which shows:

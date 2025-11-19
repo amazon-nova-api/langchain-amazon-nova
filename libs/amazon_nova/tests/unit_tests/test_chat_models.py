@@ -56,7 +56,7 @@ def test_chatnova_message_conversion() -> None:
         HumanMessage(content="Hello!"),
     ]
 
-    converted = llm._convert_messages_to_openai_format(messages)
+    converted = llm._convert_messages_to_nova_format(messages)
 
     assert len(converted) == 2
     assert converted[0]["role"] == "system"
