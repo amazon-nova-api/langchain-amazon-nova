@@ -64,7 +64,7 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
         supports_tool_calling=True,
         supports_image_generation=False,
         supports_streaming=True,
-        max_context_tokens=300000,
+        max_context_tokens=1000000,
         modality="multimodal",
     ),
     # Canvas models (image generation)

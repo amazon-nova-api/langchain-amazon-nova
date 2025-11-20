@@ -35,17 +35,17 @@ class TestChatNovaIntegration(ChatModelIntegrationTests):
     @property
     def supports_image_inputs(self) -> bool:
         """Whether the model supports image inputs."""
-        return False  # TODO: Update based on Nova's capabilities
+        return True  # Nova Pro, Lite, and Premier support vision
 
     @property
     def supports_video_inputs(self) -> bool:
         """Whether the model supports video inputs."""
-        return False  # TODO: Update based on Nova's capabilities
+        return False  # Video support not yet implemented
 
     @property
     def supports_audio_inputs(self) -> bool:
         """Whether the model supports audio inputs."""
-        return False  # TODO: Update based on Nova's capabilities
+        return False  # Audio support not yet implemented
 
     @property
     def supports_anthropic_inputs(self) -> bool:

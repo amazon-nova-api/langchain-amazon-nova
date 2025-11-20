@@ -33,6 +33,7 @@ from pydantic import (
     model_validator,
 )
 
+from langchain_nova._exceptions import map_http_error_to_nova_exception
 from langchain_nova.models import get_model_capabilities, validate_tool_calling
 
 
@@ -334,7 +335,10 @@ class ChatNova(BaseChatModel):
     def _convert_messages_to_nova_format(
         self, messages: List[BaseMessage]
     ) -> List[Dict[str, Any]]:
-        """Convert LangChain messages to OpenAI format."""
+        """Convert LangChain messages to OpenAI format.
+
+        Supports both text-only and multimodal (text + images) messages.
+        """
         openai_messages = []
         for message in messages:
             if hasattr(message, "type"):
@@ -351,10 +355,69 @@ class ChatNova(BaseChatModel):
                 "role": role,
             }
 
-            # Only set content if it's not empty
-            # Tool calls might have empty content
+            # Handle content - can be string or list of content blocks
             if message.content:
-                msg_dict["content"] = message.content
+                # Check if content is already a list (multimodal message)
+                if isinstance(message.content, list):
+                    # Content is already in multi-part format
+                    # Convert LangChain format to OpenAI format
+                    content_blocks = []
+                    for block in message.content:
+                        if isinstance(block, dict):
+                            block_type = block.get("type", "text")
+
+                            if block_type == "text":
+                                content_blocks.append({
+                                    "type": "text",
+                                    "text": block.get("text", "")
+                                })
+                            elif block_type == "image_url":
+                                # Handle image_url blocks
+                                # LangChain format: {"type": "image_url", "image_url": {"url": "..."}}
+                                # or {"type": "image_url", "image_url": "..."}
+                                image_url = block.get("image_url", {})
+                                if isinstance(image_url, dict):
+                                    url = image_url.get("url", "")
+                                    detail = image_url.get("detail", "auto")
+                                    content_blocks.append({
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": url,
+                                            "detail": detail
+                                        }
+                                    })
+                                else:
+                                    # image_url is directly a string
+                                    content_blocks.append({
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": str(image_url),
+                                            "detail": "auto"
+                                        }
+                                    })
+                            elif block_type == "image":
+                                # Handle legacy "image" type - convert to image_url
+                                # This is for backwards compatibility
+                                url = block.get("url") or block.get("image_url", "")
+                                if url:
+                                    content_blocks.append({
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": url,
+                                            "detail": block.get("detail", "auto")
+                                        }
+                                    })
+                        elif isinstance(block, str):
+                            # String in list - treat as text
+                            content_blocks.append({
+                                "type": "text",
+                                "text": block
+                            })
+
+                    msg_dict["content"] = content_blocks
+                else:
+                    # Simple string content
+                    msg_dict["content"] = message.content
             elif not (
                 message.type == "ai"
                 and hasattr(message, "tool_calls")
@@ -446,7 +509,14 @@ class ChatNova(BaseChatModel):
         if stop is not None:
             params["stop"] = stop
 
-        response = self.client.chat.completions.create(**params)
+        try:
+            response = self.client.chat.completions.create(**params)
+        except Exception as e:
+            # Map OpenAI SDK errors to Nova exceptions
+            nova_exception = map_http_error_to_nova_exception(
+                e, model_name=self.model_name
+            )
+            raise nova_exception from e
 
         choice = response.choices[0]
         message_data: Dict[str, Any] = {
@@ -516,7 +586,14 @@ class ChatNova(BaseChatModel):
         if stop is not None:
             params["stop"] = stop
 
-        response = await self.async_client.chat.completions.create(**params)
+        try:
+            response = await self.async_client.chat.completions.create(**params)
+        except Exception as e:
+            # Map OpenAI SDK errors to Nova exceptions
+            nova_exception = map_http_error_to_nova_exception(
+                e, model_name=self.model_name
+            )
+            raise nova_exception from e
 
         choice = response.choices[0]
         message_data: Dict[str, Any] = {
@@ -586,7 +663,16 @@ class ChatNova(BaseChatModel):
         if stop is not None:
             params["stop"] = stop
 
-        for chunk in self.client.chat.completions.create(**params):
+        try:
+            stream = self.client.chat.completions.create(**params)
+        except Exception as e:
+            # Map OpenAI SDK errors to Nova exceptions
+            nova_exception = map_http_error_to_nova_exception(
+                e, model_name=self.model_name
+            )
+            raise nova_exception from e
+
+        for chunk in stream:
             if not chunk.choices:
                 continue
 
@@ -626,7 +712,15 @@ class ChatNova(BaseChatModel):
         if stop is not None:
             params["stop"] = stop
 
-        stream = await self.async_client.chat.completions.create(**params)
+        try:
+            stream = await self.async_client.chat.completions.create(**params)
+        except Exception as e:
+            # Map OpenAI SDK errors to Nova exceptions
+            nova_exception = map_http_error_to_nova_exception(
+                e, model_name=self.model_name
+            )
+            raise nova_exception from e
+
         async for chunk in stream:
             if not chunk.choices:
                 continue

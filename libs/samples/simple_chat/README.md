@@ -203,6 +203,56 @@ python advanced_parameters.py --demo basic --reasoning high
 python advanced_parameters.py --demo sampling --top-p 0.95
 ```
 
+### vision_chat.py
+
+Vision/multimodal capabilities with image inputs.
+
+```bash
+python vision_chat.py                # Run all examples
+python vision_chat.py --example 1    # Run specific example
+python vision_chat.py --example 4 --image path/to/image.jpg  # With local image
+```
+
+Shows:
+- Single image URL analysis
+- Multiple images in one request
+- Image detail levels (low/high/auto)
+- Base64 encoded local images
+- Multi-turn conversations with images
+
+Examples:
+1. Single Image URL - Simple question with image
+2. Multiple Images - Compare two images
+3. Detail Levels - Low vs high detail analysis
+4. Base64 Image - Upload local image file
+5. Conversation - Multi-turn chat about an image
+
+**Image URL Format:**
+```python
+from langchain_core.messages import HumanMessage
+
+message = HumanMessage(content=[
+    {"type": "text", "text": "What's in this image?"},
+    {
+        "type": "image_url",
+        "image_url": {
+            "url": "https://example.com/image.jpg",
+            "detail": "high"  # or "low" or "auto"
+        }
+    }
+])
+```
+
+**Supported Image Formats:**
+- HTTP/HTTPS URLs
+- Base64 data URLs (data:image/jpeg;base64,...)
+- JPEG, PNG, GIF, WebP
+
+**Models with Vision Support:**
+- nova-lite-v1
+- nova-pro-v1
+- nova-premier-v1
+
 ## Verbose Mode
 
 All examples support `-v` or `--verbose` flag which shows:
@@ -233,4 +283,46 @@ Tokens used: {'input_tokens': 23, 'output_tokens': 8, 'total_tokens': 31}
 
 [DEBUG] Response time: 0.87s
 [DEBUG] Response metadata: {'model': 'nova-pro-v1', 'finish_reason': 'stop'}
+```
+
+## Error Handling
+
+### error_handling.py
+
+Error handling patterns with Nova-specific exceptions.
+
+```bash
+python error_handling.py              # Run all examples
+python error_handling.py --example 1  # Run specific example
+```
+
+Shows:
+- Catching specific error types (NovaModelNotFoundError, NovaValidationError, etc.)
+- Catching all errors with base NovaError
+- Retry logic for throttling errors (NovaThrottlingError)
+- Fallback to different models on errors
+- Graceful degradation on model errors
+
+**Exception Types:**
+
+- `NovaError` - Base exception for all Nova errors
+- `NovaValidationError` - Invalid parameters (HTTP 400)
+- `NovaModelNotFoundError` - Model not found (HTTP 404)
+- `NovaThrottlingError` - Rate limit exceeded (HTTP 429)
+- `NovaModelError` - Internal model error (HTTP 500)
+- `NovaToolCallError` - Tool calling errors
+- `NovaConfigurationError` - Configuration issues
+
+**Example Usage:**
+
+```python
+from langchain_nova import ChatNova, NovaError, NovaModelNotFoundError
+
+try:
+    llm = ChatNova(model="invalid-model")
+    llm.invoke("Hello!")
+except NovaModelNotFoundError as e:
+    print(f"Model {e.model_name} not found (status: {e.status_code})")
+except NovaError as e:
+    print(f"Nova error: {e}")
 ```
