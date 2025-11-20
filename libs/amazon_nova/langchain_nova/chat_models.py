@@ -391,10 +391,12 @@ class ChatNova(BaseChatModel):
                                     # Skip block if no image data
                                     continue
 
-                                content_blocks.append({
-                                    "type": "image_url",
-                                    "image_url": {"url": image_url}
-                                })
+                                content_blocks.append(
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {"url": image_url},
+                                    }
+                                )
                             elif block_type == "image_url":
                                 # OpenAI format image_url block
                                 # {"type": "image_url", "image_url": {"url": "..."}}
@@ -402,16 +404,17 @@ class ChatNova(BaseChatModel):
                                 image_url = block.get("image_url", {})
                                 if isinstance(image_url, dict):
                                     url = image_url.get("url", "")
-                                    content_blocks.append({
-                                        "type": "image_url",
-                                        "image_url": {"url": url}
-                                    })
+                                    content_blocks.append(
+                                        {"type": "image_url", "image_url": {"url": url}}
+                                    )
                                 else:
                                     # image_url is directly a string
-                                    content_blocks.append({
-                                        "type": "image_url",
-                                        "image_url": {"url": str(image_url)}
-                                    })
+                                    content_blocks.append(
+                                        {
+                                            "type": "image_url",
+                                            "image_url": {"url": str(image_url)},
+                                        }
+                                    )
                         elif hasattr(block, "block_type"):
                             # LangChain content block object (not dict)
                             # Skip for now - needs proper serialization
@@ -431,6 +434,30 @@ class ChatNova(BaseChatModel):
             ):
                 # For non-AI messages or AI without tool calls, set empty content
                 msg_dict["content"] = ""
+
+            # Handle AI message tool calls
+            if (
+                message.type == "ai"
+                and hasattr(message, "tool_calls")
+                and message.tool_calls
+            ):
+                # Convert LangChain tool calls back to OpenAI format
+                msg_dict["tool_calls"] = [
+                    {
+                        "id": tc["id"],
+                        "type": "function",
+                        "function": {
+                            "name": tc["name"],
+                            "arguments": json.dumps(tc["args"])
+                            if isinstance(tc.get("args"), dict)
+                            else tc.get("args", "{}"),
+                        },
+                    }
+                    for tc in message.tool_calls
+                ]
+                # AI messages with tool calls can have empty content
+                if "content" not in msg_dict:
+                    msg_dict["content"] = ""
 
             # Handle tool message IDs
             if isinstance(message, ToolMessage):
