@@ -63,7 +63,7 @@ class TestModelRegistry:
 
     def test_text_only_models(self):
         """Test text-only model capabilities."""
-        text_models = ["nova-micro-v1", "nova-lite-v1", "nova-pro-v1"]
+        text_models = ["nova-micro-v1"]
         for model_name in text_models:
             caps = MODEL_CAPABILITIES[model_name]
             assert caps.supports_text is True
@@ -74,7 +74,23 @@ class TestModelRegistry:
 
     def test_multimodal_models(self):
         """Test multimodal model capabilities."""
+        # nova-lite-v1, nova-pro-v1, and nova-premier-v1 support vision
+        multimodal_models = ["nova-lite-v1", "nova-pro-v1", "nova-premier-v1"]
         caps = MODEL_CAPABILITIES["nova-premier-v1"]
+        assert caps.supports_text is True
+        assert caps.supports_vision is True
+        assert caps.supports_tool_calling is True
+        assert caps.supports_image_generation is False
+        assert caps.modality == "multimodal"
+
+        caps = MODEL_CAPABILITIES["nova-pro-v1"]
+        assert caps.supports_text is True
+        assert caps.supports_vision is True
+        assert caps.supports_tool_calling is True
+        assert caps.supports_image_generation is False
+        assert caps.modality == "multimodal"
+
+        caps = MODEL_CAPABILITIES["nova-lite-v1"]
         assert caps.supports_text is True
         assert caps.supports_vision is True
         assert caps.supports_tool_calling is True
@@ -125,8 +141,9 @@ class TestHelperFunctions:
     def test_is_multimodal_model(self):
         """Test is_multimodal_model function."""
         assert is_multimodal_model("nova-premier-v1") is True
-        assert is_multimodal_model("nova-pro-v1") is False
-        assert is_multimodal_model("nova-lite-v1") is False
+        assert is_multimodal_model("nova-pro-v1") is True
+        assert is_multimodal_model("nova-lite-v1") is True
+        assert is_multimodal_model("nova-micro-v1") is False
 
     def test_is_image_generation_model(self):
         """Test is_image_generation_model function."""
@@ -155,12 +172,14 @@ class TestValidation:
     def test_validate_vision_input_success(self):
         """Test vision input validation succeeds for supporting models."""
         # Should not raise
+        validate_vision_input("nova-pro-v1")
         validate_vision_input("nova-premier-v1")
+        validate_vision_input("nova-lite-v1")
 
     def test_validate_vision_input_failure(self):
         """Test vision input validation fails for non-supporting models."""
         with pytest.raises(ValueError, match="does not support image/video input"):
-            validate_vision_input("nova-pro-v1")
+            validate_vision_input("nova-micro-v1")
 
     def test_validate_image_generation_success(self):
         """Test image generation validation succeeds for supporting models."""

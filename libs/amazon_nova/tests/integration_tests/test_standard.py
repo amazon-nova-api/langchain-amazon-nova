@@ -30,7 +30,7 @@ class TestChatNovaIntegration(ChatModelIntegrationTests):
     @property
     def has_tool_calling(self) -> bool:
         """Whether the model supports tool calling."""
-        return False  # TODO: Update when tool calling is implemented
+        return True
 
     @property
     def supports_image_inputs(self) -> bool:

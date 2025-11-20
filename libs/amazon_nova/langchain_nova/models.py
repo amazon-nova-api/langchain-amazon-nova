@@ -39,6 +39,7 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
         max_context_tokens=128000,
         modality="text",
     ),
+    # Multimodal models (vision input - text, images, videos)
     "nova-lite-v1": ModelCapabilities(
         supports_text=True,
         supports_vision=True,
@@ -46,7 +47,7 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
         supports_image_generation=False,
         supports_streaming=True,
         max_context_tokens=300000,
-        modality="text",
+        modality="multimodal",
     ),
     "nova-pro-v1": ModelCapabilities(
         supports_text=True,
@@ -55,9 +56,8 @@ MODEL_CAPABILITIES: Dict[str, ModelCapabilities] = {
         supports_image_generation=False,
         supports_streaming=True,
         max_context_tokens=300000,
-        modality="text",
+        modality="multimodal",
     ),
-    # Multimodal models (vision input)
     "nova-premier-v1": ModelCapabilities(
         supports_text=True,
         supports_vision=True,
