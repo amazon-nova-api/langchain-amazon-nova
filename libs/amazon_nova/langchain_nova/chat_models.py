@@ -485,25 +485,6 @@ class ChatNova(BaseChatModel):
 
         return openai_messages
 
-    def _merge_params(self, base_kwargs: Dict[str, Any]) -> Dict[str, Any]:
-        """Merge model-level params with invoke-level kwargs.
-
-        Invoke-level kwargs override model-level defaults.
-
-        Args:
-            base_kwargs: Kwargs passed to invoke/stream methods
-
-        Returns:
-            Merged parameters dict
-        """
-        params = {**self._default_params, **base_kwargs}
-
-        # Handle max_completion_tokens precedence over max_tokens
-        if "max_completion_tokens" in params:
-            params.pop("max_tokens", None)
-
-        return params
-
     def _generate(
         self,
         messages: List[BaseMessage],
@@ -514,12 +495,17 @@ class ChatNova(BaseChatModel):
         """Generate chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
-        # Merge model-level and invoke-level params
+        # Merge model-level defaults with invoke-level kwargs
         params = {
-            **self._merge_params(kwargs),
+            **self._default_params,
+            **kwargs,
             "messages": openai_messages,
             "stream": False,
         }
+
+        # Handle max_completion_tokens precedence over max_tokens
+        if "max_completion_tokens" in params:
+            params.pop("max_tokens", None)
 
         if stop is not None:
             params["stop"] = stop
@@ -587,12 +573,17 @@ class ChatNova(BaseChatModel):
         """Async generate chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
-        # Merge model-level and invoke-level params
+        # Merge model-level defaults with invoke-level kwargs
         params = {
-            **self._merge_params(kwargs),
+            **self._default_params,
+            **kwargs,
             "messages": openai_messages,
             "stream": False,
         }
+
+        # Handle max_completion_tokens precedence over max_tokens
+        if "max_completion_tokens" in params:
+            params.pop("max_tokens", None)
 
         if stop is not None:
             params["stop"] = stop
@@ -660,12 +651,17 @@ class ChatNova(BaseChatModel):
         """Stream chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
-        # Merge model-level and invoke-level params
+        # Merge model-level defaults with invoke-level kwargs
         params = {
-            **self._merge_params(kwargs),
+            **self._default_params,
+            **kwargs,
             "messages": openai_messages,
             "stream": True,
         }
+
+        # Handle max_completion_tokens precedence over max_tokens
+        if "max_completion_tokens" in params:
+            params.pop("max_tokens", None)
 
         if stop is not None:
             params["stop"] = stop
@@ -705,12 +701,17 @@ class ChatNova(BaseChatModel):
         """Async stream chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
-        # Merge model-level and invoke-level params
+        # Merge model-level defaults with invoke-level kwargs
         params = {
-            **self._merge_params(kwargs),
+            **self._default_params,
+            **kwargs,
             "messages": openai_messages,
             "stream": True,
         }
+
+        # Handle max_completion_tokens precedence over max_tokens
+        if "max_completion_tokens" in params:
+            params.pop("max_tokens", None)
 
         if stop is not None:
             params["stop"] = stop
