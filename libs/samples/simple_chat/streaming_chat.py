@@ -20,6 +20,17 @@ def main():
         action="store_true",
         help="Enable verbose output",
     )
+    parser.add_argument(
+        "--include-usage",
+        action="store_true",
+        help="Include usage metadata in streaming response",
+    )
+    parser.add_argument(
+        "--reasoning",
+        type=str,
+        choices=["low", "medium", "high"],
+        help="Reasoning effort level",
+    )
     args = parser.parse_args()
 
     # Initialize the model
@@ -30,11 +41,18 @@ def main():
         model=args.model,
         temperature=0.7,
         max_tokens=2048,
+        reasoning_effort=args.reasoning,
+        stream_options={"include_usage": True} if args.include_usage else None,
+        metadata={"example": "streaming_chat"},
     )
 
     if args.verbose:
         print(f"[DEBUG] Model initialized successfully")
         print(f"[DEBUG] Streaming enabled")
+        if args.reasoning:
+            print(f"[DEBUG] Reasoning effort: {args.reasoning}")
+        if args.include_usage:
+            print(f"[DEBUG] Usage metadata will be included")
 
     # Stream responses
     messages = [

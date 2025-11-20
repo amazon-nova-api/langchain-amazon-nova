@@ -38,6 +38,16 @@ Shows:
 - Simple invoke pattern
 - Usage metadata (token counts)
 
+Options:
+- `--reasoning` - Reasoning effort (low, medium, high)
+- `--top-p` - Top-p sampling (0.0-1.0)
+- `--max-tokens` - Maximum tokens to generate (default: 2048)
+
+```bash
+python basic_chat.py --reasoning high --top-p 0.95
+python basic_chat.py --max-tokens 500
+```
+
 ### streaming_chat.py
 
 Streaming responses for real-time output.
@@ -50,6 +60,14 @@ python streaming_chat.py --verbose
 Shows:
 - Token-by-token streaming
 - Chunk counting in verbose mode
+
+Options:
+- `--include-usage` - Include usage metadata in streaming response
+- `--reasoning` - Reasoning effort level
+
+```bash
+python streaming_chat.py --include-usage --reasoning medium
+```
 
 ### async_chat.py
 
@@ -134,6 +152,56 @@ Examples in the script:
 4. Multi-turn conversation with tools
 
 **Note:** Tool calling support depends on the Nova model being used. If the model doesn't support tools, it may respond directly without using them.
+
+### advanced_parameters.py
+
+Comprehensive demonstration of all Phase 1 API parameters.
+
+```bash
+python advanced_parameters.py
+python advanced_parameters.py --demo reasoning
+python advanced_parameters.py --demo all
+```
+
+Shows:
+- `max_tokens` and `max_completion_tokens` usage
+- `top_p` nucleus sampling
+- `reasoning_effort` levels (low, medium, high)
+- `metadata` for request tracking
+- `stream_options` for usage data in streaming
+- Per-call parameter overrides
+- Token limit controls
+
+Available demos:
+- `basic` - Basic parameter usage
+- `reasoning` - Reasoning effort comparison
+- `tokens` - Token limit controls
+- `sampling` - Top-p sampling variations
+- `streaming` - Streaming with usage metadata
+- `overrides` - Per-call parameter overrides
+- `metadata` - Request tracking with metadata
+- `completion_tokens` - max_completion_tokens vs max_tokens
+- `all` - Run all demos (default)
+
+Options:
+- `--demo NAME` - Run specific demo
+- `--model MODEL` - Choose Nova model
+- `--reasoning LEVEL` - Set reasoning effort
+- `--top-p VALUE` - Set top-p sampling
+
+Examples:
+```bash
+# Run all demos
+python advanced_parameters.py
+
+# Run specific demo
+python advanced_parameters.py --demo reasoning
+python advanced_parameters.py --demo streaming
+
+# With custom parameters
+python advanced_parameters.py --demo basic --reasoning high
+python advanced_parameters.py --demo sampling --top-p 0.95
+```
 
 ## Verbose Mode
 

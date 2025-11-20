@@ -13,9 +13,13 @@ def main():
     parser = argparse.ArgumentParser(description="LangChain chains with Nova")
     parser.add_argument("--model", type=str, default="nova-pro-v1")
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--reasoning", type=str, choices=["low", "medium", "high"])
+    parser.add_argument("--top-p", type=float, help="Top-p sampling (0.0-1.0)")
     args = parser.parse_args()
 
-    llm = ChatNova(model=args.model, temperature=0.7)
+    llm = ChatNova(
+        model=args.model, temperature=0.7, reasoning_effort=args.reasoning, top_p=args.top_p
+    )
 
     if args.verbose:
         print(f"\n[DEBUG] Using model: {args.model}")
@@ -91,8 +95,10 @@ def main():
     print("=== 4. Chain with Fallbacks ===\n")
 
     # Fallback to different model if first fails
-    primary = ChatNova(model=args.model, temperature=0.7)
-    fallback_model = ChatNova(model="nova-lite-v1", temperature=0.7)
+    primary = ChatNova(
+        model=args.model, temperature=0.7, max_tokens=500, reasoning_effort=args.reasoning
+    )
+    fallback_model = ChatNova(model="nova-lite-v1", temperature=0.7, max_tokens=500)
 
     prompt = ChatPromptTemplate.from_template("What is {thing}?")
     chain_with_fallback = (prompt | primary | StrOutputParser()).with_fallbacks(

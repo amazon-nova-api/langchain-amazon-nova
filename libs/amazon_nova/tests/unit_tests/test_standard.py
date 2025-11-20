@@ -18,6 +18,11 @@ class TestChatNovaUnit(ChatModelUnitTests):
         return ChatNova
 
     @property
+    def has_structured_output(self) -> bool:
+        """Structured output not yet implemented."""
+        return False
+
+    @property
     def chat_model_params(self) -> dict:
         """Return initialization parameters for the chat model."""
         return {
@@ -39,4 +44,9 @@ class TestChatNovaUnit(ChatModelUnitTests):
     @pytest.mark.xfail(reason="Not yet implemented")
     def test_structured_output(self) -> None:
         """Structured output not yet implemented."""
+        pass
+
+    @pytest.mark.xfail(reason="with_structured_output not yet implemented")
+    def test_with_structured_output(self) -> None:
+        """Structured output test not yet implemented."""
         pass

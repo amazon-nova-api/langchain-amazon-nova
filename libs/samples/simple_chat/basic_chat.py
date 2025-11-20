@@ -20,6 +20,23 @@ def main():
         action="store_true",
         help="Enable verbose output",
     )
+    parser.add_argument(
+        "--reasoning",
+        type=str,
+        choices=["low", "medium", "high"],
+        help="Reasoning effort level",
+    )
+    parser.add_argument(
+        "--top-p",
+        type=float,
+        help="Top-p sampling (0.0-1.0)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=2048,
+        help="Maximum tokens to generate (default: 2048)",
+    )
     args = parser.parse_args()
 
     # Initialize the model
@@ -29,7 +46,10 @@ def main():
     llm = ChatNova(
         model=args.model,
         temperature=0.7,
-        max_tokens=2048,
+        max_tokens=args.max_tokens,
+        reasoning_effort=args.reasoning,
+        top_p=args.top_p,
+        metadata={"example": "basic_chat", "version": "1.0"},
     )
 
     if args.verbose:
@@ -37,6 +57,10 @@ def main():
         print(f"[DEBUG] Base URL: {llm.base_url}")
         print(f"[DEBUG] Temperature: {llm.temperature}")
         print(f"[DEBUG] Max tokens: {llm.max_tokens}")
+        if args.reasoning:
+            print(f"[DEBUG] Reasoning effort: {args.reasoning}")
+        if args.top_p:
+            print(f"[DEBUG] Top-p: {args.top_p}")
 
     # Simple invoke
     messages = [

@@ -8,6 +8,7 @@ from typing import (
     Any,
     Dict,
     List,
+    Literal,
     Optional,
     Union,
 )
@@ -103,6 +104,16 @@ class ChatNova(BaseChatModel):
             Sampling temperature.
         max_tokens: Optional[int]
             Max number of tokens to generate.
+        max_completion_tokens: Optional[int]
+            Max tokens in completion (OpenAI compatible param).
+        top_p: Optional[float]
+            Nucleus sampling threshold.
+        reasoning_effort: Optional[Literal["low", "medium", "high"]]
+            Reasoning effort level for reasoning models.
+        metadata: Optional[Dict[str, Any]]
+            Request metadata for tracking.
+        stream_options: Optional[Dict[str, bool]]
+            Stream options (e.g., include_usage).
 
     Key init args — client:
         api_key: Optional[SecretStr]
@@ -167,6 +178,21 @@ class ChatNova(BaseChatModel):
 
     max_tokens: Optional[int] = Field(default=None, ge=1)
     """Maximum number of tokens to generate."""
+
+    max_completion_tokens: Optional[int] = Field(default=None, ge=1)
+    """Maximum tokens in completion (OpenAI compatible)."""
+
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    """Nucleus sampling threshold."""
+
+    reasoning_effort: Optional[Literal["low", "medium", "high"]] = Field(default=None)
+    """Reasoning effort level for reasoning models."""
+
+    metadata: Optional[Dict[str, Any]] = Field(default=None)
+    """Request metadata for tracking."""
+
+    stream_options: Optional[Dict[str, bool]] = Field(default=None)
+    """Stream options, e.g., {'include_usage': True}."""
 
     api_key: Optional[Union[SecretStr, str]] = Field(
         default_factory=secret_from_env("NOVA_API_KEY", default=None)
@@ -262,6 +288,9 @@ class ChatNova(BaseChatModel):
             "model_name": self.model_name,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
+            "max_completion_tokens": self.max_completion_tokens,
+            "top_p": self.top_p,
+            "reasoning_effort": self.reasoning_effort,
             "base_url": self.base_url,
         }
 
@@ -359,6 +388,40 @@ class ChatNova(BaseChatModel):
 
         return openai_messages
 
+    def _merge_params(self, base_kwargs: Dict[str, Any]) -> Dict[str, Any]:
+        """Merge model-level params with invoke-level kwargs.
+
+        Invoke-level kwargs take precedence over model-level defaults.
+
+        Args:
+            base_kwargs: Kwargs passed to invoke/stream methods
+
+        Returns:
+            Merged parameters dict
+        """
+        params = {}
+
+        # max_completion_tokens takes precedence over max_tokens if both provided
+        max_completion = base_kwargs.get("max_completion_tokens", self.max_completion_tokens)
+        max_tok = base_kwargs.get("max_tokens", self.max_tokens)
+
+        if max_completion is not None:
+            params["max_completion_tokens"] = max_completion
+        elif max_tok is not None:
+            params["max_tokens"] = max_tok
+
+        # Add other optional parameters if they exist
+        if (top_p := base_kwargs.get("top_p", self.top_p)) is not None:
+            params["top_p"] = top_p
+        if (reasoning := base_kwargs.get("reasoning_effort", self.reasoning_effort)) is not None:
+            params["reasoning_effort"] = reasoning
+        if (metadata := base_kwargs.get("metadata", self.metadata)) is not None:
+            params["metadata"] = metadata
+        if (stream_opts := base_kwargs.get("stream_options", self.stream_options)) is not None:
+            params["stream_options"] = stream_opts
+
+        return params
+
     def _generate(
         self,
         messages: List[BaseMessage],
@@ -369,16 +432,16 @@ class ChatNova(BaseChatModel):
         """Generate chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
+        # Merge model-level and invoke-level params
+        merged_params = self._merge_params(kwargs)
+
         params = {
             "model": self.model_name,
             "messages": openai_messages,
             "temperature": self.temperature,
             "stream": False,
-            **kwargs,
+            **merged_params,
         }
-
-        if self.max_tokens is not None:
-            params["max_tokens"] = self.max_tokens
 
         if stop is not None:
             params["stop"] = stop
@@ -439,16 +502,16 @@ class ChatNova(BaseChatModel):
         """Async generate chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
+        # Merge model-level and invoke-level params
+        merged_params = self._merge_params(kwargs)
+
         params = {
             "model": self.model_name,
             "messages": openai_messages,
             "temperature": self.temperature,
             "stream": False,
-            **kwargs,
+            **merged_params,
         }
-
-        if self.max_tokens is not None:
-            params["max_tokens"] = self.max_tokens
 
         if stop is not None:
             params["stop"] = stop
@@ -509,16 +572,16 @@ class ChatNova(BaseChatModel):
         """Stream chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
+        # Merge model-level and invoke-level params
+        merged_params = self._merge_params(kwargs)
+
         params = {
             "model": self.model_name,
             "messages": openai_messages,
             "temperature": self.temperature,
             "stream": True,
-            **kwargs,
+            **merged_params,
         }
-
-        if self.max_tokens is not None:
-            params["max_tokens"] = self.max_tokens
 
         if stop is not None:
             params["stop"] = stop
@@ -549,16 +612,16 @@ class ChatNova(BaseChatModel):
         """Async stream chat completion."""
         openai_messages = self._convert_messages_to_nova_format(messages)
 
+        # Merge model-level and invoke-level params
+        merged_params = self._merge_params(kwargs)
+
         params = {
             "model": self.model_name,
             "messages": openai_messages,
             "temperature": self.temperature,
             "stream": True,
-            **kwargs,
+            **merged_params,
         }
-
-        if self.max_tokens is not None:
-            params["max_tokens"] = self.max_tokens
 
         if stop is not None:
             params["stop"] = stop
