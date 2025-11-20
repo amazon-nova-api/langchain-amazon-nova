@@ -65,13 +65,17 @@ def main():
 
     if args.verbose:
         print("[DEBUG] Using CommaSeparatedListOutputParser")
-        print(f"[DEBUG] Format instructions: {list_parser.get_format_instructions()[:50]}...")
+        print(
+            f"[DEBUG] Format instructions: {list_parser.get_format_instructions()[:50]}..."
+        )
 
     chain = prompt | llm | list_parser
-    result = chain.invoke({
-        "category": "programming languages",
-        "format_instructions": list_parser.get_format_instructions()
-    })
+    result = chain.invoke(
+        {
+            "category": "programming languages",
+            "format_instructions": list_parser.get_format_instructions(),
+        }
+    )
     print(f"Result (list): {result}")
     print(f"Type: {type(result)}\n")
 
@@ -86,10 +90,12 @@ def main():
         print("[DEBUG] Using JsonOutputParser")
 
     chain = prompt | llm | json_parser
-    result = chain.invoke({
-        "topic": "Python programming language",
-        "format_instructions": json_parser.get_format_instructions()
-    })
+    result = chain.invoke(
+        {
+            "topic": "Python programming language",
+            "format_instructions": json_parser.get_format_instructions(),
+        }
+    )
     print(f"Result (dict): {result}")
     print(f"Type: {type(result)}\n")
 
@@ -105,10 +111,12 @@ def main():
         print(f"[DEBUG] Person fields: {list(Person.model_fields.keys())}")
 
     chain = prompt | llm | pydantic_parser
-    result = chain.invoke({
-        "occupation": "software engineer",
-        "format_instructions": pydantic_parser.get_format_instructions()
-    })
+    result = chain.invoke(
+        {
+            "occupation": "software engineer",
+            "format_instructions": pydantic_parser.get_format_instructions(),
+        }
+    )
     print(f"Result (Person): {result}")
     print(f"  Name: {result.name}")
     print(f"  Age: {result.age}")
@@ -126,10 +134,12 @@ def main():
         print("[DEBUG] Using PydanticOutputParser with StoryAnalysis model")
 
     chain = prompt | llm | story_parser
-    result = chain.invoke({
-        "story": "Alice went to Wonderland and had tea with the Mad Hatter. It was a strange adventure about growing up.",
-        "format_instructions": story_parser.get_format_instructions()
-    })
+    result = chain.invoke(
+        {
+            "story": "Alice went to Wonderland and had tea with the Mad Hatter. It was a strange adventure about growing up.",
+            "format_instructions": story_parser.get_format_instructions(),
+        }
+    )
     print(f"Result (StoryAnalysis): {result}")
     print(f"  Characters: {result.main_characters}")
     print(f"  Setting: {result.setting}")

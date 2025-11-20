@@ -152,9 +152,7 @@ def chat_non_streaming(
 
 def main() -> None:
     """Run interactive chat."""
-    parser = argparse.ArgumentParser(
-        description="Interactive chat with Amazon Nova"
-    )
+    parser = argparse.ArgumentParser(description="Interactive chat with Amazon Nova")
     parser.add_argument(
         "--model",
         type=str,
@@ -244,7 +242,9 @@ def main() -> None:
                     session_time = time.time() - session_start
                     if args.verbose:
                         print(f"\n[DEBUG] Session duration: {session_time:.1f}s")
-                        print(f"[DEBUG] Total response time: {total_response_time:.1f}s")
+                        print(
+                            f"[DEBUG] Total response time: {total_response_time:.1f}s"
+                        )
                     print("\nGoodbye!\n")
                     break
 
@@ -297,6 +297,7 @@ def main() -> None:
             print(f"\nError: {e}\n")
             if args.verbose:
                 import traceback
+
                 print("[DEBUG] Full traceback:")
                 traceback.print_exc()
             continue

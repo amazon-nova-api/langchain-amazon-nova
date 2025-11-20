@@ -50,30 +50,32 @@ def main():
 
     # Save conversations
     memory.save_context(
-        {"input": "Hi, I'm Alice"},
-        {"output": "Hello Alice! Nice to meet you."}
+        {"input": "Hi, I'm Alice"}, {"output": "Hello Alice! Nice to meet you."}
     )
     memory.save_context(
-        {"input": "I live in Seattle"},
-        {"output": "Seattle is a beautiful city!"}
+        {"input": "I live in Seattle"}, {"output": "Seattle is a beautiful city!"}
     )
 
     if args.verbose:
         print(f"[DEBUG] Buffer memory has {len(memory.chat_memory.messages)} messages")
 
     # Use memory in a chain
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a helpful assistant."),
-        MessagesPlaceholder(variable_name="history"),
-        ("human", "{input}"),
-    ])
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are a helpful assistant."),
+            MessagesPlaceholder(variable_name="history"),
+            ("human", "{input}"),
+        ]
+    )
 
     chain = prompt | llm
 
-    result = chain.invoke({
-        "history": memory.chat_memory.messages,
-        "input": "What's my name and where do I live?"
-    })
+    result = chain.invoke(
+        {
+            "history": memory.chat_memory.messages,
+            "input": "What's my name and where do I live?",
+        }
+    )
 
     print(f"Result: {result.content}\n")
 
@@ -83,9 +85,18 @@ def main():
 
     # Add multiple conversations
     conversations = [
-        ("Tell me about quantum physics", "Quantum physics studies matter at atomic scale..."),
-        ("How does it relate to computing?", "Quantum computing uses quantum bits or qubits..."),
-        ("What are practical applications?", "Applications include cryptography, drug discovery..."),
+        (
+            "Tell me about quantum physics",
+            "Quantum physics studies matter at atomic scale...",
+        ),
+        (
+            "How does it relate to computing?",
+            "Quantum computing uses quantum bits or qubits...",
+        ),
+        (
+            "What are practical applications?",
+            "Applications include cryptography, drug discovery...",
+        ),
     ]
 
     for user_input, ai_output in conversations:
@@ -123,7 +134,7 @@ def main():
 
         # Keep only last N messages (plus system message)
         if len(messages) > MAX_MESSAGES:
-            messages = [messages[0]] + messages[-(MAX_MESSAGES-1):]
+            messages = [messages[0]] + messages[-(MAX_MESSAGES - 1) :]
             if args.verbose:
                 print(f"[DEBUG] Trimmed to {len(messages)} messages")
 

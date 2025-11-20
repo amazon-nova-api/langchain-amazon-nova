@@ -62,7 +62,9 @@ async def main(args):
     elapsed = time.time() - start_time
 
     if args.verbose:
-        print(f"\n\n[DEBUG] Async stream received {chunk_count} chunks in {elapsed:.2f}s")
+        print(
+            f"\n\n[DEBUG] Async stream received {chunk_count} chunks in {elapsed:.2f}s"
+        )
 
     print("\n\nDone!\n")
 

@@ -49,9 +49,7 @@ def test_model_not_found_error():
 def test_throttling_error():
     """Test NovaThrottlingError (HTTP 429)."""
     error = NovaThrottlingError(
-        "Rate limit exceeded",
-        retry_after=60,
-        response={"error": "throttled"}
+        "Rate limit exceeded", retry_after=60, response={"error": "throttled"}
     )
 
     assert str(error) == "Rate limit exceeded"

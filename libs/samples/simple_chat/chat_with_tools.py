@@ -68,7 +68,9 @@ def get_current_time(timezone: str = "UTC") -> str:
     offset = timezone_offsets.get(timezone, 0)
     adjusted_time = current_time.replace(hour=(current_time.hour + offset) % 24)
 
-    return f"Current time in {timezone}: {adjusted_time.strftime('%I:%M %p on %B %d, %Y')}"
+    return (
+        f"Current time in {timezone}: {adjusted_time.strftime('%I:%M %p on %B %d, %Y')}"
+    )
 
 
 @tool
@@ -97,10 +99,19 @@ def calculate(operation: str, a: float, b: float) -> str:
 
 def main():
     """Run interactive chat with tools."""
-    parser = argparse.ArgumentParser(description="Interactive chat with Amazon Nova and tools")
+    parser = argparse.ArgumentParser(
+        description="Interactive chat with Amazon Nova and tools"
+    )
     parser.add_argument("--model", default="nova-pro-v1", help="Nova model to use")
-    parser.add_argument("--temperature", type=float, default=0, help="Temperature for sampling (default: 0 for consistent tool use)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debug output")
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0,
+        help="Temperature for sampling (default: 0 for consistent tool use)",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose debug output"
+    )
     args = parser.parse_args()
 
     # Initialize model with tools
@@ -150,13 +161,19 @@ def main():
         max_iterations = 5
         for iteration in range(max_iterations):
             if args.verbose:
-                print(f"[DEBUG] Iteration {iteration + 1}, messages count: {len(messages)}")
+                print(
+                    f"[DEBUG] Iteration {iteration + 1}, messages count: {len(messages)}"
+                )
 
             response = llm.invoke(messages)
 
             if args.verbose:
-                print(f"[DEBUG] Response finish_reason: {response.response_metadata.get('finish_reason')}")
-                print(f"[DEBUG] Tool calls: {len(response.tool_calls) if response.tool_calls else 0}")
+                print(
+                    f"[DEBUG] Response finish_reason: {response.response_metadata.get('finish_reason')}"
+                )
+                print(
+                    f"[DEBUG] Tool calls: {len(response.tool_calls) if response.tool_calls else 0}"
+                )
                 if response.tool_calls:
                     for tc in response.tool_calls:
                         print(f"[DEBUG]   - {tc['name']}: {tc['args']}")

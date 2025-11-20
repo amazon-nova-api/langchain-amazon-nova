@@ -68,7 +68,7 @@ def example_retry_on_throttle():
             break
         except NovaThrottlingError as e:
             if attempt < max_retries - 1:
-                wait_time = e.retry_after or (2 ** attempt)
+                wait_time = e.retry_after or (2**attempt)
                 print(f"Throttled. Waiting {wait_time}s before retry...")
                 time.sleep(wait_time)
             else:

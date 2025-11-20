@@ -39,9 +39,7 @@ def call_nova_with_web_search(
     payload = {
         "model": model,
         "messages": messages,
-        "web_search_options": {
-            "search_context_size": search_context_size
-        },
+        "web_search_options": {"search_context_size": search_context_size},
         "temperature": temperature,
         "max_tokens": max_tokens,
         "top_p": top_p,

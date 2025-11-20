@@ -56,7 +56,9 @@ class NovaChat:
             payload["tools"] = self.tools
             payload["tool_choice"] = tool_choice
 
-        response = requests.post(NOVA_API_URL, headers=headers, json=payload, stream=stream)
+        response = requests.post(
+            NOVA_API_URL, headers=headers, json=payload, stream=stream
+        )
         response.raise_for_status()
 
         if stream:
@@ -138,7 +140,10 @@ def main():
                 print(f"Stream: {stream}")
                 continue
             elif user_input == "/tools":
-                print("Current tools:", json.dumps(chat.tools, indent=2) if chat.tools else "None")
+                print(
+                    "Current tools:",
+                    json.dumps(chat.tools, indent=2) if chat.tools else "None",
+                )
                 continue
 
             chat.add_message("user", user_input)

@@ -86,7 +86,9 @@ def handle_stream_response(response):
                         print(content, end="", flush=True)
                         full_content += content
                     elif "tool_calls" in delta:
-                        print(f"\n[Tool call: {json.dumps(delta['tool_calls'], indent=2)}]")
+                        print(
+                            f"\n[Tool call: {json.dumps(delta['tool_calls'], indent=2)}]"
+                        )
                 elif "usage" in chunk:
                     print(f"\n\n[Usage: {json.dumps(chunk['usage'], indent=2)}]")
             except json.JSONDecodeError as e:

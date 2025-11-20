@@ -38,20 +38,24 @@ def main():
 
     print("=== 2. Chat Template with System Message ===\n")
 
-    chat_template = ChatPromptTemplate.from_messages([
-        ("system", "You are a {role}. Keep responses {style}."),
-        ("human", "{input}"),
-    ])
+    chat_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are a {role}. Keep responses {style}."),
+            ("human", "{input}"),
+        ]
+    )
 
     if args.verbose:
         print(f"[DEBUG] Chat template with {len(chat_template.messages)} messages")
 
     chain = chat_template | llm
-    result = chain.invoke({
-        "role": "pirate",
-        "style": "brief and in character",
-        "input": "What's the weather like?"
-    })
+    result = chain.invoke(
+        {
+            "role": "pirate",
+            "style": "brief and in character",
+            "input": "What's the weather like?",
+        }
+    )
     print(f"Result: {result.content}\n")
 
     print("=== 3. Few-Shot Examples ===\n")
@@ -62,21 +66,25 @@ def main():
         {"input": "hot", "output": "cold"},
     ]
 
-    example_prompt = ChatPromptTemplate.from_messages([
-        ("human", "{input}"),
-        ("ai", "{output}"),
-    ])
+    example_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("human", "{input}"),
+            ("ai", "{output}"),
+        ]
+    )
 
     few_shot_prompt = FewShotChatMessagePromptTemplate(
         example_prompt=example_prompt,
         examples=examples,
     )
 
-    final_prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are providing antonyms."),
-        few_shot_prompt,
-        ("human", "{input}"),
-    ])
+    final_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are providing antonyms."),
+            few_shot_prompt,
+            ("human", "{input}"),
+        ]
+    )
 
     if args.verbose:
         print(f"[DEBUG] Few-shot prompt with {len(examples)} examples")
@@ -87,11 +95,13 @@ def main():
 
     print("=== 4. Template with Message Placeholder ===\n")
 
-    prompt_with_history = ChatPromptTemplate.from_messages([
-        ("system", "You are a helpful assistant."),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{input}"),
-    ])
+    prompt_with_history = ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are a helpful assistant."),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{input}"),
+        ]
+    )
 
     from langchain_core.messages import AIMessage, HumanMessage
 

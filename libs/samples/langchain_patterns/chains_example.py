@@ -18,7 +18,10 @@ def main():
     args = parser.parse_args()
 
     llm = ChatNova(
-        model=args.model, temperature=0.7, reasoning_effort=args.reasoning, top_p=args.top_p
+        model=args.model,
+        temperature=0.7,
+        reasoning_effort=args.reasoning,
+        top_p=args.top_p,
     )
 
     if args.verbose:
@@ -60,10 +63,12 @@ def main():
         | summarize_chain
     )
 
-    result = full_chain.invoke({
-        "text": "LangChain is great for building AI applications",
-        "language": "Spanish"
-    })
+    result = full_chain.invoke(
+        {
+            "text": "LangChain is great for building AI applications",
+            "language": "Spanish",
+        }
+    )
     print(f"Result: {result}\n")
 
     print("=== 3. Parallel Execution ===\n")
@@ -96,7 +101,10 @@ def main():
 
     # Fallback to different model if first fails
     primary = ChatNova(
-        model=args.model, temperature=0.7, max_tokens=500, reasoning_effort=args.reasoning
+        model=args.model,
+        temperature=0.7,
+        max_tokens=500,
+        reasoning_effort=args.reasoning,
     )
     fallback_model = ChatNova(model="nova-lite-v1", temperature=0.7, max_tokens=500)
 

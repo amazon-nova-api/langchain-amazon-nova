@@ -83,7 +83,9 @@ async def test_astreaming_all_models(model_id: str) -> None:
     full_response = "".join(chunks)
     assert len(full_response) > 0
     assert len(chunks) > 0
-    print(f"\n[{model_id}] Async streamed {len(chunks)} chunks, {len(full_response)} chars")
+    print(
+        f"\n[{model_id}] Async streamed {len(chunks)} chunks, {len(full_response)} chars"
+    )
 
 
 def test_model_metadata(single_test_model: str) -> None:

@@ -34,26 +34,28 @@ def main():
     documents = [
         Document(
             page_content="LangChain is a framework for developing applications powered by language models. It provides tools for prompt management, chains, and agents.",
-            metadata={"source": "intro", "page": 1}
+            metadata={"source": "intro", "page": 1},
         ),
         Document(
             page_content="LCEL (LangChain Expression Language) is a declarative way to compose chains. It uses the pipe operator to connect components.",
-            metadata={"source": "lcel", "page": 2}
+            metadata={"source": "lcel", "page": 2},
         ),
         Document(
             page_content="LangChain supports multiple model providers including OpenAI, Anthropic, and others. It provides a unified interface.",
-            metadata={"source": "providers", "page": 3}
+            metadata={"source": "providers", "page": 3},
         ),
         Document(
             page_content="Retrieval Augmented Generation (RAG) combines retrieval with generation. Documents are retrieved and used as context.",
-            metadata={"source": "rag", "page": 4}
+            metadata={"source": "rag", "page": 4},
         ),
     ]
 
     if args.verbose:
         print(f"[DEBUG] Created {len(documents)} documents")
         for doc in documents:
-            print(f"[DEBUG]   - {doc.metadata['source']}: {len(doc.page_content)} chars")
+            print(
+                f"[DEBUG]   - {doc.metadata['source']}: {len(doc.page_content)} chars"
+            )
         print()
 
     print("=== 2. Simple Retrieval (Manual) ===\n")
@@ -125,8 +127,10 @@ Answer:"""
     )
 
     rag_chain = (
-        {"context": lambda x: format_docs(retrieve_top_k(x["question"])),
-         "question": RunnablePassthrough()}
+        {
+            "context": lambda x: format_docs(retrieve_top_k(x["question"])),
+            "question": RunnablePassthrough(),
+        }
         | rag_prompt
         | llm
         | StrOutputParser()
