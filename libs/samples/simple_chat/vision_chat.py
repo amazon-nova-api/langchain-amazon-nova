@@ -46,7 +46,7 @@ def example_single_image_url(model: str = "nova-pro-v1", verbose: bool = False):
     """Example 1: Simple image URL with question."""
     print("Example 1: Single Image URL\n")
 
-    llm = ChatNova(model=model, temperature=0.7)
+    llm = ChatNova(model=model, temperature=0.8)
 
     # Create message with image URL
     message = HumanMessage(
@@ -78,13 +78,13 @@ def example_multiple_images(model: str = "nova-pro-v1", verbose: bool = False):
     """Example 2: Multiple images in one request."""
     print("Example 2: Multiple Images\n")
 
-    llm = ChatNova(model=model, temperature=0.7)
+    llm = ChatNova(model=model, temperature=0.8)
 
     message = HumanMessage(
         content=[
             {
                 "type": "text",
-                "text": "Compare these two images. What are the similarities and differences?",
+                "text": "Compare these two images. What are the key similarities and differences?",
             },
             {
                 "type": "image_url",
@@ -111,11 +111,13 @@ def example_multiple_images(model: str = "nova-pro-v1", verbose: bool = False):
     print(f"Response: {response.content}\n")
 
 
-def example_base64_image(image_path: str, model: str = "nova-pro-v1", verbose: bool = False):
+def example_base64_image(
+    image_path: str, model: str = "nova-pro-v1", verbose: bool = False
+):
     """Example 3: Base64 encoded local image."""
     print(f"Example 3: Base64 Encoded Image\n")
 
-    llm = ChatNova(model=model, temperature=0.7)
+    llm = ChatNova(model=model, temperature=0.8)
 
     # Encode local image to base64
     if verbose:
@@ -129,10 +131,7 @@ def example_base64_image(image_path: str, model: str = "nova-pro-v1", verbose: b
     message = HumanMessage(
         content=[
             {"type": "text", "text": "Describe this image in detail."},
-            {
-                "type": "image_url",
-                "image_url": {"url": base64_url}
-            }
+            {"type": "image_url", "image_url": {"url": base64_url}},
         ]
     )
 
@@ -145,7 +144,7 @@ def example_conversation_with_images(model: str = "nova-pro-v1", verbose: bool =
     """Example 4: Multi-turn conversation with images."""
     print("Example 4: Conversation with Images\n")
 
-    llm = ChatNova(model=model, temperature=0.7)
+    llm = ChatNova(model=model, temperature=0.8)
 
     # First turn: Ask about image
     message1 = HumanMessage(
