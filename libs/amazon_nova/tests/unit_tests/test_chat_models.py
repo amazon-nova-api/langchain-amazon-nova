@@ -377,7 +377,6 @@ def test_convert_image_url_message():
                 "type": "image_url",
                 "image_url": {
                     "url": "https://example.com/image.jpg",
-                    "detail": "high"
                 }
             }
         ])
@@ -397,7 +396,6 @@ def test_convert_image_url_message():
     # Check image_url block
     assert converted[0]["content"][1]["type"] == "image_url"
     assert converted[0]["content"][1]["image_url"]["url"] == "https://example.com/image.jpg"
-    assert converted[0]["content"][1]["image_url"]["detail"] == "high"
 
 
 def test_convert_image_url_string_format():
@@ -418,10 +416,9 @@ def test_convert_image_url_string_format():
 
     converted = llm._convert_messages_to_nova_format(messages)
 
-    # Should convert string to proper format with default detail
+    # Should convert string to proper format
     assert converted[0]["content"][1]["type"] == "image_url"
     assert converted[0]["content"][1]["image_url"]["url"] == "https://example.com/image.jpg"
-    assert converted[0]["content"][1]["image_url"]["detail"] == "auto"
 
 
 def test_convert_mixed_content_types():
@@ -460,3 +457,69 @@ def test_convert_string_in_list():
     assert len(converted[0]["content"]) == 2
     assert converted[0]["content"][0] == {"type": "text", "text": "Hello"}
     assert converted[0]["content"][1] == {"type": "text", "text": "World"}
+
+
+def test_convert_langchain_image_block_with_url():
+    """Test converting LangChain image block (block_type='image') with URL."""
+    from langchain_core.messages import HumanMessage
+
+    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+
+    # LangChain uses block_type = "image" with url property
+    messages = [
+        HumanMessage(content=[
+            {"block_type": "image", "url": "https://example.com/image.jpg"}
+        ])
+    ]
+
+    converted = llm._convert_messages_to_nova_format(messages)
+
+    assert len(converted[0]["content"]) == 1
+    assert converted[0]["content"][0]["type"] == "image_url"
+    assert converted[0]["content"][0]["image_url"]["url"] == "https://example.com/image.jpg"
+
+
+def test_convert_langchain_image_block_with_base64():
+    """Test converting LangChain image block with base64 data."""
+    from langchain_core.messages import HumanMessage
+
+    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+
+    # LangChain image block with base64
+    messages = [
+        HumanMessage(content=[
+            {
+                "block_type": "image",
+                "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                "mime_type": "image/png"
+            }
+        ])
+    ]
+
+    converted = llm._convert_messages_to_nova_format(messages)
+
+    assert len(converted[0]["content"]) == 1
+    assert converted[0]["content"][0]["type"] == "image_url"
+
+    # Check that base64 was converted to data URL
+    image_url = converted[0]["content"][0]["image_url"]["url"]
+    assert image_url.startswith("data:image/png;base64,")
+    assert "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" in image_url
+
+
+def test_convert_langchain_image_block_default_mime_type():
+    """Test that base64 images default to image/jpeg if no mime_type."""
+    from langchain_core.messages import HumanMessage
+
+    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+
+    messages = [
+        HumanMessage(content=[
+            {"block_type": "image", "base64": "fake_base64_data"}
+        ])
+    ]
+
+    converted = llm._convert_messages_to_nova_format(messages)
+
+    image_url = converted[0]["content"][0]["image_url"]["url"]
+    assert image_url == "data:image/jpeg;base64,fake_base64_data"

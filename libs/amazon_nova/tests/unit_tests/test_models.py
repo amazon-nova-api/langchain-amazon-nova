@@ -214,4 +214,4 @@ class TestContextWindows:
     def test_premier_context_window(self):
         """Test nova-premier-v1 context window."""
         caps = get_model_capabilities("nova-premier-v1")
-        assert caps.max_context_tokens == 300000
+        assert caps.max_context_tokens == 1000000

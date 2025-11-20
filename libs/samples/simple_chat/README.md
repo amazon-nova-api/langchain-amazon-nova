@@ -216,16 +216,14 @@ python vision_chat.py --example 4 --image path/to/image.jpg  # With local image
 Shows:
 - Single image URL analysis
 - Multiple images in one request
-- Image detail levels (low/high/auto)
 - Base64 encoded local images
 - Multi-turn conversations with images
 
 Examples:
 1. Single Image URL - Simple question with image
 2. Multiple Images - Compare two images
-3. Detail Levels - Low vs high detail analysis
-4. Base64 Image - Upload local image file
-5. Conversation - Multi-turn chat about an image
+3. Base64 Image - Upload local image file
+4. Conversation - Multi-turn chat about an image
 
 **Image URL Format:**
 ```python
@@ -235,10 +233,7 @@ message = HumanMessage(content=[
     {"type": "text", "text": "What's in this image?"},
     {
         "type": "image_url",
-        "image_url": {
-            "url": "https://example.com/image.jpg",
-            "detail": "high"  # or "low" or "auto"
-        }
+        "image_url": {"url": "https://example.com/image.jpg"}
     }
 ])
 ```

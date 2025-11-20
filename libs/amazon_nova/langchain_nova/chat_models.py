@@ -359,60 +359,66 @@ class ChatNova(BaseChatModel):
             if message.content:
                 # Check if content is already a list (multimodal message)
                 if isinstance(message.content, list):
-                    # Content is already in multi-part format
+                    # Content is in multi-part format (LangChain content blocks)
                     # Convert LangChain format to OpenAI format
                     content_blocks = []
                     for block in message.content:
                         if isinstance(block, dict):
-                            block_type = block.get("type", "text")
+                            # LangChain uses "type" for dicts, "block_type" for typed objects
+                            block_type = block.get("type") or block.get(
+                                "block_type", "text"
+                            )
 
                             if block_type == "text":
+                                content_blocks.append(
+                                    {"type": "text", "text": block.get("text", "")}
+                                )
+                            elif block_type == "image":
+                                # LangChain image block - can have url or base64
+                                # url: direct image URL
+                                # base64: base64 encoded image data
+                                url = block.get("url")
+                                base64_data = block.get("base64")
+
+                                if base64_data:
+                                    # Convert base64 to data URL
+                                    # Format: data:image/jpeg;base64,{base64_data}
+                                    mime_type = block.get("mime_type", "image/jpeg")
+                                    image_url = f"data:{mime_type};base64,{base64_data}"
+                                elif url:
+                                    image_url = url
+                                else:
+                                    # Skip block if no image data
+                                    continue
+
                                 content_blocks.append({
-                                    "type": "text",
-                                    "text": block.get("text", "")
+                                    "type": "image_url",
+                                    "image_url": {"url": image_url}
                                 })
                             elif block_type == "image_url":
-                                # Handle image_url blocks
-                                # LangChain format: {"type": "image_url", "image_url": {"url": "..."}}
+                                # OpenAI format image_url block
+                                # {"type": "image_url", "image_url": {"url": "..."}}
                                 # or {"type": "image_url", "image_url": "..."}
                                 image_url = block.get("image_url", {})
                                 if isinstance(image_url, dict):
                                     url = image_url.get("url", "")
-                                    detail = image_url.get("detail", "auto")
                                     content_blocks.append({
                                         "type": "image_url",
-                                        "image_url": {
-                                            "url": url,
-                                            "detail": detail
-                                        }
+                                        "image_url": {"url": url}
                                     })
                                 else:
                                     # image_url is directly a string
                                     content_blocks.append({
                                         "type": "image_url",
-                                        "image_url": {
-                                            "url": str(image_url),
-                                            "detail": "auto"
-                                        }
+                                        "image_url": {"url": str(image_url)}
                                     })
-                            elif block_type == "image":
-                                # Handle legacy "image" type - convert to image_url
-                                # This is for backwards compatibility
-                                url = block.get("url") or block.get("image_url", "")
-                                if url:
-                                    content_blocks.append({
-                                        "type": "image_url",
-                                        "image_url": {
-                                            "url": url,
-                                            "detail": block.get("detail", "auto")
-                                        }
-                                    })
+                        elif hasattr(block, "block_type"):
+                            # LangChain content block object (not dict)
+                            # Skip for now - needs proper serialization
+                            continue
                         elif isinstance(block, str):
                             # String in list - treat as text
-                            content_blocks.append({
-                                "type": "text",
-                                "text": block
-                            })
+                            content_blocks.append({"type": "text", "text": block})
 
                     msg_dict["content"] = content_blocks
                 else:
@@ -423,25 +429,8 @@ class ChatNova(BaseChatModel):
                 and hasattr(message, "tool_calls")
                 and message.tool_calls
             ):
-                # If content is empty and it's not an AI message with tool calls, set empty string
+                # For non-AI messages or AI without tool calls, set empty content
                 msg_dict["content"] = ""
-
-            # Handle tool calls in AI messages
-            if message.type == "ai" and hasattr(message, "tool_calls"):
-                if message.tool_calls:
-                    msg_dict["tool_calls"] = [
-                        {
-                            "id": tc.get("id", ""),
-                            "type": "function",
-                            "function": {
-                                "name": tc["name"],
-                                "arguments": json.dumps(tc.get("args", {}))
-                                if isinstance(tc.get("args"), dict)
-                                else tc.get("args", ""),
-                            },
-                        }
-                        for tc in message.tool_calls
-                    ]
 
             # Handle tool message IDs
             if isinstance(message, ToolMessage):
@@ -465,7 +454,9 @@ class ChatNova(BaseChatModel):
         params = {}
 
         # max_completion_tokens takes precedence over max_tokens if both provided
-        max_completion = base_kwargs.get("max_completion_tokens", self.max_completion_tokens)
+        max_completion = base_kwargs.get(
+            "max_completion_tokens", self.max_completion_tokens
+        )
         max_tok = base_kwargs.get("max_tokens", self.max_tokens)
 
         if max_completion is not None:
@@ -476,11 +467,15 @@ class ChatNova(BaseChatModel):
         # Add other optional parameters if they exist
         if (top_p := base_kwargs.get("top_p", self.top_p)) is not None:
             params["top_p"] = top_p
-        if (reasoning := base_kwargs.get("reasoning_effort", self.reasoning_effort)) is not None:
+        if (
+            reasoning := base_kwargs.get("reasoning_effort", self.reasoning_effort)
+        ) is not None:
             params["reasoning_effort"] = reasoning
         if (metadata := base_kwargs.get("metadata", self.metadata)) is not None:
             params["metadata"] = metadata
-        if (stream_opts := base_kwargs.get("stream_options", self.stream_options)) is not None:
+        if (
+            stream_opts := base_kwargs.get("stream_options", self.stream_options)
+        ) is not None:
             params["stream_options"] = stream_opts
 
         return params

@@ -15,7 +15,6 @@ import base64
 from pathlib import Path
 
 from langchain_core.messages import HumanMessage
-
 from langchain_nova import ChatNova
 
 
@@ -57,14 +56,15 @@ def example_single_image_url(model: str = "nova-pro-v1", verbose: bool = False):
                 "type": "image_url",
                 "image_url": {
                     "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
-                    "detail": "high"
-                }
-            }
+                },
+            },
         ]
     )
 
     if verbose:
-        print(f"[DEBUG] Sending image URL: {message.content[1]['image_url']['url'][:60]}...")
+        print(
+            f"[DEBUG] Sending image URL: {message.content[1]['image_url']['url'][:60]}..."
+        )
 
     response = llm.invoke([message])
 
@@ -82,76 +82,38 @@ def example_multiple_images(model: str = "nova-pro-v1", verbose: bool = False):
 
     message = HumanMessage(
         content=[
-            {"type": "text", "text": "Compare these two images. What are the similarities and differences?"},
+            {
+                "type": "text",
+                "text": "Compare these two images. What are the similarities and differences?",
+            },
             {
                 "type": "image_url",
                 "image_url": {
                     "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
-                }
+                },
             },
             {
                 "type": "image_url",
                 "image_url": {
                     "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Fronalpstock_big.jpg/2560px-Fronalpstock_big.jpg"
-                }
-            }
+                },
+            },
         ]
     )
 
     if verbose:
-        print(f"[DEBUG] Sending {len([c for c in message.content if c.get('type') == 'image_url'])} images")
+        print(
+            f"[DEBUG] Sending {len([c for c in message.content if c.get('type') == 'image_url'])} images"
+        )
 
     response = llm.invoke([message])
 
     print(f"Response: {response.content}\n")
 
 
-def example_image_with_detail_level(model: str = "nova-pro-v1", verbose: bool = False):
-    """Example 3: Image with different detail levels."""
-    print("Example 3: Image Detail Levels\n")
-
-    llm = ChatNova(model=model, temperature=0.7)
-
-    # Try with low detail (faster, cheaper)
-    print("Low detail analysis:")
-    message_low = HumanMessage(
-        content=[
-            {"type": "text", "text": "What's the main subject of this image?"},
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
-                    "detail": "low"
-                }
-            }
-        ]
-    )
-
-    response_low = llm.invoke([message_low])
-    print(f"  {response_low.content[:100]}...\n")
-
-    # Try with high detail (more accurate)
-    print("High detail analysis:")
-    message_high = HumanMessage(
-        content=[
-            {"type": "text", "text": "What's the main subject of this image?"},
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
-                    "detail": "high"
-                }
-            }
-        ]
-    )
-
-    response_high = llm.invoke([message_high])
-    print(f"  {response_high.content[:100]}...\n")
-
-
 def example_base64_image(image_path: str, model: str = "nova-pro-v1", verbose: bool = False):
-    """Example 4: Base64 encoded local image."""
-    print(f"Example 4: Base64 Encoded Image\n")
+    """Example 3: Base64 encoded local image."""
+    print(f"Example 3: Base64 Encoded Image\n")
 
     llm = ChatNova(model=model, temperature=0.7)
 
@@ -169,9 +131,7 @@ def example_base64_image(image_path: str, model: str = "nova-pro-v1", verbose: b
             {"type": "text", "text": "Describe this image in detail."},
             {
                 "type": "image_url",
-                "image_url": {
-                    "url": base64_url
-                }
+                "image_url": {"url": base64_url}
             }
         ]
     )
@@ -182,8 +142,8 @@ def example_base64_image(image_path: str, model: str = "nova-pro-v1", verbose: b
 
 
 def example_conversation_with_images(model: str = "nova-pro-v1", verbose: bool = False):
-    """Example 5: Multi-turn conversation with images."""
-    print("Example 5: Conversation with Images\n")
+    """Example 4: Multi-turn conversation with images."""
+    print("Example 4: Conversation with Images\n")
 
     llm = ChatNova(model=model, temperature=0.7)
 
@@ -195,8 +155,8 @@ def example_conversation_with_images(model: str = "nova-pro-v1", verbose: bool =
                 "type": "image_url",
                 "image_url": {
                     "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
-                }
-            }
+                },
+            },
         ]
     )
 
@@ -227,8 +187,8 @@ def main():
     parser.add_argument(
         "--example",
         type=int,
-        choices=[1, 2, 3, 4, 5],
-        help="Which example to run (1-5)",
+        choices=[1, 2, 3, 4],
+        help="Which example to run (1-4)",
     )
     parser.add_argument(
         "--image",
@@ -236,7 +196,8 @@ def main():
         help="Path to local image file (for example 4)",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Enable verbose output",
     )
@@ -245,6 +206,7 @@ def main():
 
     # Check if model supports vision
     from langchain_nova.models import get_model_capabilities
+
     caps = get_model_capabilities(args.model)
     if not caps.supports_vision:
         print(f"Warning: Model {args.model} may not support vision inputs.")
@@ -256,15 +218,12 @@ def main():
     if args.example == 2 or args.example is None:
         example_multiple_images(args.model, args.verbose)
 
-    if args.example == 3 or args.example is None:
-        example_image_with_detail_level(args.model, args.verbose)
-
-    if args.example == 4 and args.image:
+    if args.example == 3 and args.image:
         example_base64_image(args.image, args.model, args.verbose)
-    elif args.example == 4:
-        print("Example 4 requires --image parameter\n")
+    elif args.example == 3:
+        print("Example 3 requires --image parameter\n")
 
-    if args.example == 5 or args.example is None:
+    if args.example == 4 or args.example is None:
         example_conversation_with_images(args.model, args.verbose)
 
 
