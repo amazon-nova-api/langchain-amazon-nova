@@ -523,3 +523,33 @@ def test_convert_langchain_image_block_default_mime_type():
 
     image_url = converted[0]["content"][0]["image_url"]["url"]
     assert image_url == "data:image/jpeg;base64,fake_base64_data"
+
+
+def test_tools_passed_to_api():
+    """Test that tools from bind_tools are passed to the API request."""
+    from unittest.mock import MagicMock, patch
+    from langchain_core.tools import tool
+
+    @tool
+    def get_weather(location: str) -> str:
+        """Get weather for a location."""
+        return f"Weather in {location}"
+
+    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+
+    # Mock the client
+    mock_response = MagicMock()
+    mock_response.choices = [MagicMock()]
+    mock_response.choices[0].message.content = "Let me check the weather"
+    mock_response.choices[0].finish_reason = "stop"
+    mock_response.model = "nova-pro-v1"
+
+    with patch.object(llm.client.chat.completions, 'create', return_value=mock_response) as mock_create:
+        llm_with_tools = llm.bind_tools([get_weather])
+        llm_with_tools.invoke("What's the weather in Paris?")
+
+        # Check that tools were passed to the API
+        call_kwargs = mock_create.call_args[1]
+        assert "tools" in call_kwargs
+        assert len(call_kwargs["tools"]) == 1
+        assert call_kwargs["tools"][0]["function"]["name"] == "get_weather"

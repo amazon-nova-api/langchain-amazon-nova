@@ -7,6 +7,7 @@ Requirements:
 Usage:
     python chat_with_tools.py
     python chat_with_tools.py --model nova-lite-v1
+    python chat_with_tools.py --verbose
 """
 
 import argparse
@@ -98,7 +99,8 @@ def main():
     """Run interactive chat with tools."""
     parser = argparse.ArgumentParser(description="Interactive chat with Amazon Nova and tools")
     parser.add_argument("--model", default="nova-pro-v1", help="Nova model to use")
-    parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for sampling")
+    parser.add_argument("--temperature", type=float, default=0, help="Temperature for sampling (default: 0 for consistent tool use)")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debug output")
     args = parser.parse_args()
 
     # Initialize model with tools
@@ -111,12 +113,20 @@ def main():
     # Initialize conversation
     messages = [
         SystemMessage(
-            content="You are a helpful assistant with access to tools for weather, time, and calculations."
+            content="You are a helpful assistant with access to tools for weather, time, and calculations. Use the tools when needed to answer user questions accurately."
         )
     ]
 
     print(f"\nNova Chat with Tools ({args.model})")
-    print("Commands: /exit to quit, /clear to reset\n")
+    print("Commands: /exit to quit, /clear to reset")
+
+    if args.verbose:
+        print(f"\n[DEBUG] Model: {args.model}, Temperature: {args.temperature}")
+        print(f"[DEBUG] Tools bound: {len(tools)}")
+        for t in tools:
+            print(f"  - {t.name}: {t.description}")
+
+    print()
 
     while True:
         user_input = input("You: ").strip()
@@ -138,8 +148,19 @@ def main():
 
         # Tool calling loop
         max_iterations = 5
-        for _ in range(max_iterations):
+        for iteration in range(max_iterations):
+            if args.verbose:
+                print(f"[DEBUG] Iteration {iteration + 1}, messages count: {len(messages)}")
+
             response = llm.invoke(messages)
+
+            if args.verbose:
+                print(f"[DEBUG] Response finish_reason: {response.response_metadata.get('finish_reason')}")
+                print(f"[DEBUG] Tool calls: {len(response.tool_calls) if response.tool_calls else 0}")
+                if response.tool_calls:
+                    for tc in response.tool_calls:
+                        print(f"[DEBUG]   - {tc['name']}: {tc['args']}")
+
             messages.append(response)
 
             # Check for tool calls
@@ -160,8 +181,12 @@ def main():
                 # Execute tool
                 try:
                     result = tool_map[tool_name].invoke(tool_args)
+                    if args.verbose:
+                        print(f"[DEBUG]   Result: {result}")
                 except Exception as e:
                     result = f"Error: {str(e)}"
+                    if args.verbose:
+                        print(f"[DEBUG]   Error: {e}")
 
                 messages.append(ToolMessage(content=str(result), tool_call_id=tool_id))
 

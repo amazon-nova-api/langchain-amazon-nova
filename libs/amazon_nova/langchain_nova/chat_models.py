@@ -296,6 +296,24 @@ class ChatNova(BaseChatModel):
         }
 
     @property
+    def _default_params(self) -> Dict[str, Any]:
+        """Get the default parameters for calling Nova API."""
+        exclude_if_none = {
+            "max_tokens": self.max_tokens,
+            "max_completion_tokens": self.max_completion_tokens,
+            "top_p": self.top_p,
+            "reasoning_effort": self.reasoning_effort,
+            "metadata": self.metadata,
+            "stream_options": self.stream_options,
+        }
+
+        return {
+            "model": self.model_name,
+            "temperature": self.temperature,
+            **{k: v for k, v in exclude_if_none.items() if v is not None},
+        }
+
+    @property
     def lc_secrets(self) -> Dict[str, str]:
         """Return secrets for serialization."""
         return {"api_key": "NOVA_API_KEY"}
@@ -433,7 +451,7 @@ class ChatNova(BaseChatModel):
                 and message.tool_calls
             ):
                 # For non-AI messages or AI without tool calls, set empty content
-                msg_dict["content"] = ""
+                msg_dict["content"] = " "
 
             # Handle AI message tool calls
             if (
@@ -457,7 +475,7 @@ class ChatNova(BaseChatModel):
                 ]
                 # AI messages with tool calls can have empty content
                 if "content" not in msg_dict:
-                    msg_dict["content"] = ""
+                    msg_dict["content"] = " "
 
             # Handle tool message IDs
             if isinstance(message, ToolMessage):
@@ -470,7 +488,7 @@ class ChatNova(BaseChatModel):
     def _merge_params(self, base_kwargs: Dict[str, Any]) -> Dict[str, Any]:
         """Merge model-level params with invoke-level kwargs.
 
-        Invoke-level kwargs take precedence over model-level defaults.
+        Invoke-level kwargs override model-level defaults.
 
         Args:
             base_kwargs: Kwargs passed to invoke/stream methods
@@ -478,32 +496,11 @@ class ChatNova(BaseChatModel):
         Returns:
             Merged parameters dict
         """
-        params = {}
+        params = {**self._default_params, **base_kwargs}
 
-        # max_completion_tokens takes precedence over max_tokens if both provided
-        max_completion = base_kwargs.get(
-            "max_completion_tokens", self.max_completion_tokens
-        )
-        max_tok = base_kwargs.get("max_tokens", self.max_tokens)
-
-        if max_completion is not None:
-            params["max_completion_tokens"] = max_completion
-        elif max_tok is not None:
-            params["max_tokens"] = max_tok
-
-        # Add other optional parameters if they exist
-        if (top_p := base_kwargs.get("top_p", self.top_p)) is not None:
-            params["top_p"] = top_p
-        if (
-            reasoning := base_kwargs.get("reasoning_effort", self.reasoning_effort)
-        ) is not None:
-            params["reasoning_effort"] = reasoning
-        if (metadata := base_kwargs.get("metadata", self.metadata)) is not None:
-            params["metadata"] = metadata
-        if (
-            stream_opts := base_kwargs.get("stream_options", self.stream_options)
-        ) is not None:
-            params["stream_options"] = stream_opts
+        # Handle max_completion_tokens precedence over max_tokens
+        if "max_completion_tokens" in params:
+            params.pop("max_tokens", None)
 
         return params
 
@@ -518,14 +515,10 @@ class ChatNova(BaseChatModel):
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level and invoke-level params
-        merged_params = self._merge_params(kwargs)
-
         params = {
-            "model": self.model_name,
+            **self._merge_params(kwargs),
             "messages": openai_messages,
-            "temperature": self.temperature,
             "stream": False,
-            **merged_params,
         }
 
         if stop is not None:
@@ -595,14 +588,10 @@ class ChatNova(BaseChatModel):
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level and invoke-level params
-        merged_params = self._merge_params(kwargs)
-
         params = {
-            "model": self.model_name,
+            **self._merge_params(kwargs),
             "messages": openai_messages,
-            "temperature": self.temperature,
             "stream": False,
-            **merged_params,
         }
 
         if stop is not None:
@@ -672,14 +661,10 @@ class ChatNova(BaseChatModel):
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level and invoke-level params
-        merged_params = self._merge_params(kwargs)
-
         params = {
-            "model": self.model_name,
+            **self._merge_params(kwargs),
             "messages": openai_messages,
-            "temperature": self.temperature,
             "stream": True,
-            **merged_params,
         }
 
         if stop is not None:
@@ -721,14 +706,10 @@ class ChatNova(BaseChatModel):
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level and invoke-level params
-        merged_params = self._merge_params(kwargs)
-
         params = {
-            "model": self.model_name,
+            **self._merge_params(kwargs),
             "messages": openai_messages,
-            "temperature": self.temperature,
             "stream": True,
-            **merged_params,
         }
 
         if stop is not None:
