@@ -3,6 +3,7 @@ Integration tests verifying Nova API response format matches specification.
 """
 
 from typing import Literal, Optional, cast
+
 import pytest
 from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
@@ -195,7 +196,11 @@ def test_max_tokens_enforced() -> None:
 def test_reasoning_effort_parameter() -> None:
     """Verify reasoning_effort parameter is accepted."""
     for effort_str in ["low", "medium", "high"]:
-        llm = ChatNova(model="nova-pro-v1", reasoning_effort=cast(Literal["low", "medium", "high"], effort_str), temperature=0.3)
+        llm = ChatNova(
+            model="nova-pro-v1",
+            reasoning_effort=cast(Literal["low", "medium", "high"], effort_str),
+            temperature=0.3,
+        )
 
         response = llm.invoke("What is 15% of 240?")
 

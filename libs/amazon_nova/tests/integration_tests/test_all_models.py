@@ -1,6 +1,5 @@
 """Integration tests that run against all available Nova models."""
 
-from typing import Any
 import pytest
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -42,7 +41,9 @@ def test_streaming_all_models(model_id: str) -> None:
 
     chunks = []
     for chunk in llm.stream(messages):
-        content = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+        content = (
+            chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+        )
         chunks.append(content)
 
     full_response = "".join(chunks)
@@ -77,7 +78,9 @@ async def test_astreaming_all_models(model_id: str) -> None:
 
     chunks = []
     async for chunk in llm.astream(messages):
-        content = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+        content = (
+            chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+        )
         chunks.append(content)
 
     full_response = "".join(chunks)

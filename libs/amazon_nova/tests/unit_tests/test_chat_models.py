@@ -1,6 +1,7 @@
 """Basic unit tests for ChatNova."""
 
 from typing import Literal, cast
+
 import pytest
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
@@ -132,7 +133,11 @@ def test_top_p_validation() -> None:
 def test_reasoning_effort_initialization() -> None:
     """Test that reasoning_effort can be set at initialization."""
     for effort in ["low", "medium", "high"]:
-        llm = ChatNova(model="nova-pro-v1", reasoning_effort=cast(Literal["low", "medium", "high"], effort), api_key="test-key")
+        llm = ChatNova(
+            model="nova-pro-v1",
+            reasoning_effort=cast(Literal["low", "medium", "high"], effort),
+            api_key="test-key",
+        )
         assert llm.reasoning_effort == effort
 
 
