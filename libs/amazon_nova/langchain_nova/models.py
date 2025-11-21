@@ -125,9 +125,12 @@ def validate_tool_calling(model_name: str) -> None:
     """
     capabilities = get_model_capabilities(model_name)
     if not capabilities.supports_tool_calling:
+        supported_models = ", ".join(
+            m for m, c in MODEL_CAPABILITIES.items() if c.supports_tool_calling
+        )
         raise ValueError(
             f"Model '{model_name}' does not support tool calling. "
-            f"Tool calling is supported by: {', '.join(m for m, c in MODEL_CAPABILITIES.items() if c.supports_tool_calling)}"
+            f"Tool calling is supported by: {supported_models}"
         )
 
 
@@ -142,9 +145,12 @@ def validate_vision_input(model_name: str) -> None:
     """
     capabilities = get_model_capabilities(model_name)
     if not capabilities.supports_vision:
+        supported_models = ", ".join(
+            m for m, c in MODEL_CAPABILITIES.items() if c.supports_vision
+        )
         raise ValueError(
             f"Model '{model_name}' does not support image/video input. "
-            f"Vision is supported by: {', '.join(m for m, c in MODEL_CAPABILITIES.items() if c.supports_vision)}"
+            f"Vision is supported by: {supported_models}"
         )
 
 
@@ -159,9 +165,12 @@ def validate_image_generation(model_name: str) -> None:
     """
     capabilities = get_model_capabilities(model_name)
     if not capabilities.supports_image_generation:
+        supported_models = ", ".join(
+            m for m, c in MODEL_CAPABILITIES.items() if c.supports_image_generation
+        )
         raise ValueError(
             f"Model '{model_name}' does not support image generation. "
-            f"Image generation is supported by: {', '.join(m for m, c in MODEL_CAPABILITIES.items() if c.supports_image_generation)}"
+            f"Image generation is supported by: {supported_models}"
         )
 
 
