@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 import json
 import os
+from collections.abc import Sequence
 from typing import (
     Any,
     Dict,
@@ -36,7 +36,11 @@ from pydantic import (
 )
 
 from langchain_nova._exceptions import map_http_error_to_nova_exception
-from langchain_nova.models import ModelCapabilities, get_model_capabilities, validate_tool_calling
+from langchain_nova.models import (
+    ModelCapabilities,
+    get_model_capabilities,
+    validate_tool_calling,
+)
 
 
 def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
