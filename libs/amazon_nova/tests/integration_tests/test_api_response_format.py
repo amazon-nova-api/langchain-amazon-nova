@@ -2,21 +2,20 @@
 Integration tests verifying Nova API response format matches specification.
 """
 
+from typing import Literal, Optional, cast
 import pytest
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 
 from langchain_nova import ChatNova
 from langchain_nova._exceptions import (
     NovaError,
     NovaModelNotFoundError,
-    NovaThrottlingError,
-    NovaValidationError,
 )
 
 
 @pytest.mark.integration
-def test_basic_response_structure():
+def test_basic_response_structure() -> None:
     """Verify basic response has all required fields from API spec.
 
     Expected structure:
@@ -62,20 +61,22 @@ def test_basic_response_structure():
 
     # Verify usage metadata (converted from API format)
     assert hasattr(response, "usage_metadata")
-    assert "input_tokens" in response.usage_metadata  # converted from prompt_tokens
-    assert (
-        "output_tokens" in response.usage_metadata
-    )  # converted from completion_tokens
-    assert "total_tokens" in response.usage_metadata
+    assert response.usage_metadata is not None
+
+    # Type narrowing for mypy
+    usage = response.usage_metadata
+    assert "input_tokens" in usage  # converted from prompt_tokens
+    assert "output_tokens" in usage  # converted from completion_tokens
+    assert "total_tokens" in usage
 
     # Verify token counts are positive
-    assert response.usage_metadata["input_tokens"] > 0
-    assert response.usage_metadata["output_tokens"] > 0
-    assert response.usage_metadata["total_tokens"] > 0
+    assert usage["input_tokens"] > 0
+    assert usage["output_tokens"] > 0
+    assert usage["total_tokens"] > 0
 
 
 @pytest.mark.integration
-def test_streaming_response_structure():
+def test_streaming_response_structure() -> None:
     """Verify streaming responses match API spec.
 
     Streaming chunks should have:
@@ -96,7 +97,7 @@ def test_streaming_response_structure():
 
 
 @pytest.mark.integration
-def test_streaming_with_usage_metadata():
+def test_streaming_with_usage_metadata() -> None:
     """Verify stream_options.include_usage works correctly.
 
     When include_usage=true, the final chunk should include usage data.
@@ -116,7 +117,7 @@ def test_streaming_with_usage_metadata():
 
 
 @pytest.mark.integration
-def test_tool_call_response_format():
+def test_tool_call_response_format() -> None:
     """Verify tool call responses match API spec.
 
     Expected format in API:
@@ -173,7 +174,7 @@ def test_tool_call_response_format():
 
 
 @pytest.mark.integration
-def test_max_tokens_enforced():
+def test_max_tokens_enforced() -> None:
     """Verify max_tokens actually limits response length."""
     llm = ChatNova(model="nova-pro-v1", max_tokens=20)
 
@@ -183,6 +184,7 @@ def test_max_tokens_enforced():
 
     # Should hit token limit
     assert hasattr(response, "usage_metadata")
+    assert response.usage_metadata is not None
     assert response.usage_metadata["output_tokens"] <= 20
 
     # Finish reason should indicate length cutoff
@@ -190,10 +192,10 @@ def test_max_tokens_enforced():
 
 
 @pytest.mark.integration
-def test_reasoning_effort_parameter():
+def test_reasoning_effort_parameter() -> None:
     """Verify reasoning_effort parameter is accepted."""
-    for effort in ["low", "medium", "high"]:
-        llm = ChatNova(model="nova-pro-v1", reasoning_effort=effort, temperature=0.3)
+    for effort_str in ["low", "medium", "high"]:
+        llm = ChatNova(model="nova-pro-v1", reasoning_effort=cast(Literal["low", "medium", "high"], effort_str), temperature=0.3)
 
         response = llm.invoke("What is 15% of 240?")
 
@@ -203,7 +205,7 @@ def test_reasoning_effort_parameter():
 
 
 @pytest.mark.integration
-def test_top_p_parameter():
+def test_top_p_parameter() -> None:
     """Verify top_p parameter is accepted."""
     llm = ChatNova(model="nova-pro-v1", top_p=0.9, temperature=0.8)
 
@@ -215,7 +217,7 @@ def test_top_p_parameter():
 
 
 @pytest.mark.integration
-def test_metadata_parameter():
+def test_metadata_parameter() -> None:
     """Verify metadata parameter is accepted without errors."""
     llm = ChatNova(
         model="nova-pro-v1",
@@ -234,7 +236,7 @@ def test_metadata_parameter():
 
 
 @pytest.mark.integration
-def test_multi_content_message():
+def test_multi_content_message() -> None:
     """Verify multi-content messages are supported.
 
     API spec shows support for messages with multiple content blocks:
@@ -256,7 +258,7 @@ def test_multi_content_message():
 
 
 @pytest.mark.integration
-def test_error_response_codes():
+def test_error_response_codes() -> None:
     """Verify proper error handling for API error codes.
 
     This is a basic smoke test that exceptions are raised.
@@ -269,7 +271,7 @@ def test_error_response_codes():
 
 
 @pytest.mark.integration
-def test_invalid_model_raises_model_not_found():
+def test_invalid_model_raises_model_not_found() -> None:
     """Verify invalid model name raises NovaModelNotFoundError.
 
     Expected error code: 404 ModelNotFoundException
@@ -284,7 +286,7 @@ def test_invalid_model_raises_model_not_found():
 
 
 @pytest.mark.integration
-def test_all_exceptions_inherit_from_nova_error():
+def test_all_exceptions_inherit_from_nova_error() -> None:
     """Verify all Nova exceptions inherit from NovaError for easy catching."""
     llm = ChatNova(model="invalid-xyz", temperature=0.7)
 
@@ -292,17 +294,19 @@ def test_all_exceptions_inherit_from_nova_error():
         llm.invoke("Hello!")
 
     # Should be a NovaError (or subclass) - check the cause chain
-    exception = exc_info.value
+    exception: Optional[BaseException] = exc_info.value
     while exception is not None:
         if isinstance(exception, NovaError):
             break
-        exception = getattr(exception, "__cause__", None)
+        exception = exception.__cause__
 
+    # exception should be NovaError or None if not found in chain
+    assert exception is not None
     assert isinstance(exception, NovaError)
 
 
 @pytest.mark.integration
-def test_per_call_parameter_override():
+def test_per_call_parameter_override() -> None:
     """Verify per-call parameters override model-level defaults."""
     llm = ChatNova(
         model="nova-pro-v1", max_tokens=50, temperature=0.5, reasoning_effort="low"

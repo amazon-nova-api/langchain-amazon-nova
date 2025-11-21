@@ -1,7 +1,8 @@
 """Basic unit tests for ChatNova."""
 
+from typing import Literal, cast
 import pytest
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from langchain_nova import ChatNova
 
@@ -107,19 +108,19 @@ def test_chatnova_temperature_validation() -> None:
 # Phase 1 Parameters Tests
 
 
-def test_max_completion_tokens_initialization():
+def test_max_completion_tokens_initialization() -> None:
     """Test that max_completion_tokens can be set at initialization."""
     llm = ChatNova(model="nova-pro-v1", max_completion_tokens=200, api_key="test-key")
     assert llm.max_completion_tokens == 200
 
 
-def test_top_p_initialization():
+def test_top_p_initialization() -> None:
     """Test that top_p can be set at initialization."""
     llm = ChatNova(model="nova-pro-v1", top_p=0.9, api_key="test-key")
     assert llm.top_p == 0.9
 
 
-def test_top_p_validation():
+def test_top_p_validation() -> None:
     """Test that top_p is validated to be between 0 and 1."""
     with pytest.raises(ValueError):
         ChatNova(model="nova-pro-v1", top_p=1.5, api_key="test-key")
@@ -128,21 +129,21 @@ def test_top_p_validation():
         ChatNova(model="nova-pro-v1", top_p=-0.1, api_key="test-key")
 
 
-def test_reasoning_effort_initialization():
+def test_reasoning_effort_initialization() -> None:
     """Test that reasoning_effort can be set at initialization."""
     for effort in ["low", "medium", "high"]:
-        llm = ChatNova(model="nova-pro-v1", reasoning_effort=effort, api_key="test-key")
+        llm = ChatNova(model="nova-pro-v1", reasoning_effort=cast(Literal["low", "medium", "high"], effort), api_key="test-key")
         assert llm.reasoning_effort == effort
 
 
-def test_metadata_initialization():
+def test_metadata_initialization() -> None:
     """Test that metadata can be set at initialization."""
     metadata = {"user_id": "123", "session_id": "abc"}
     llm = ChatNova(model="nova-pro-v1", metadata=metadata, api_key="test-key")
     assert llm.metadata == metadata
 
 
-def test_stream_options_initialization():
+def test_stream_options_initialization() -> None:
     """Test that stream_options can be set at initialization."""
     stream_opts = {"include_usage": True}
     llm = ChatNova(model="nova-pro-v1", stream_options=stream_opts, api_key="test-key")
@@ -152,7 +153,7 @@ def test_stream_options_initialization():
 # Response Structure Tests (based on upstream API spec)
 
 
-def test_response_structure_fields():
+def test_response_structure_fields() -> None:
     """Test that response structure matches Nova API spec.
 
     Based on: https://quip-amazon.com/tEwWAlX0Lfc7/
@@ -188,7 +189,7 @@ def test_response_structure_fields():
     assert hasattr(llm, "max_tokens")
 
 
-def test_usage_metadata_structure():
+def test_usage_metadata_structure() -> None:
     """Test that usage metadata follows the correct structure.
 
     Expected usage structure from API:
@@ -210,7 +211,7 @@ def test_usage_metadata_structure():
     pass
 
 
-def test_tool_call_response_structure():
+def test_tool_call_response_structure() -> None:
     """Test that tool call responses match Nova API format.
 
     Expected tool_calls in assistant message:
@@ -234,7 +235,7 @@ def test_tool_call_response_structure():
     pass
 
 
-def test_finish_reasons():
+def test_finish_reasons() -> None:
     """Test that we handle all possible finish_reason values.
 
     Possible finish_reason values from Nova API:
@@ -247,7 +248,7 @@ def test_finish_reasons():
     pass
 
 
-def test_streaming_response_structure():
+def test_streaming_response_structure() -> None:
     """Test that streaming responses match Nova API format.
 
     Streaming chunks have similar structure but with delta:
@@ -269,21 +270,21 @@ def test_streaming_response_structure():
 # Multimodal Message Tests
 
 
-def test_convert_text_message():
+def test_convert_text_message() -> None:
     """Test converting simple text message."""
     from langchain_core.messages import HumanMessage
 
     llm = ChatNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [HumanMessage(content="Hello")]
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     assert len(converted) == 1
     assert converted[0]["role"] == "user"
     assert converted[0]["content"] == "Hello"
 
 
-def test_convert_image_url_message():
+def test_convert_image_url_message() -> None:
     """Test converting message with image_url content."""
     from langchain_core.messages import HumanMessage
 
@@ -304,7 +305,7 @@ def test_convert_image_url_message():
         )
     ]
 
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     assert len(converted) == 1
     assert converted[0]["role"] == "user"
@@ -323,7 +324,7 @@ def test_convert_image_url_message():
     )
 
 
-def test_convert_image_url_string_format():
+def test_convert_image_url_string_format() -> None:
     """Test converting image_url when it's a string instead of dict."""
     from langchain_core.messages import HumanMessage
 
@@ -338,7 +339,7 @@ def test_convert_image_url_string_format():
         )
     ]
 
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     # Should convert string to proper format
     assert converted[0]["content"][1]["type"] == "image_url"
@@ -348,7 +349,7 @@ def test_convert_image_url_string_format():
     )
 
 
-def test_convert_mixed_content_types():
+def test_convert_mixed_content_types() -> None:
     """Test converting message with multiple content types."""
     from langchain_core.messages import HumanMessage
 
@@ -371,7 +372,7 @@ def test_convert_mixed_content_types():
         )
     ]
 
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     assert len(converted[0]["content"]) == 4
     assert converted[0]["content"][0]["type"] == "text"
@@ -380,21 +381,21 @@ def test_convert_mixed_content_types():
     assert converted[0]["content"][3]["type"] == "image_url"
 
 
-def test_convert_string_in_list():
+def test_convert_string_in_list() -> None:
     """Test that strings in content list are converted to text blocks."""
     from langchain_core.messages import HumanMessage
 
     llm = ChatNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [HumanMessage(content=["Hello", "World"])]
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     assert len(converted[0]["content"]) == 2
     assert converted[0]["content"][0] == {"type": "text", "text": "Hello"}
     assert converted[0]["content"][1] == {"type": "text", "text": "World"}
 
 
-def test_convert_langchain_image_block_with_url():
+def test_convert_langchain_image_block_with_url() -> None:
     """Test converting LangChain image block (block_type='image') with URL."""
     from langchain_core.messages import HumanMessage
 
@@ -407,7 +408,7 @@ def test_convert_langchain_image_block_with_url():
         )
     ]
 
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     assert len(converted[0]["content"]) == 1
     assert converted[0]["content"][0]["type"] == "image_url"
@@ -417,7 +418,7 @@ def test_convert_langchain_image_block_with_url():
     )
 
 
-def test_convert_langchain_image_block_with_base64():
+def test_convert_langchain_image_block_with_base64() -> None:
     """Test converting LangChain image block with base64 data."""
     from langchain_core.messages import HumanMessage
 
@@ -429,14 +430,17 @@ def test_convert_langchain_image_block_with_base64():
             content=[
                 {
                     "block_type": "image",
-                    "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                    "base64": (
+                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ"
+                        "AAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                    ),
                     "mime_type": "image/png",
                 }
             ]
         )
     ]
 
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     assert len(converted[0]["content"]) == 1
     assert converted[0]["content"][0]["type"] == "image_url"
@@ -445,12 +449,12 @@ def test_convert_langchain_image_block_with_base64():
     image_url = converted[0]["content"][0]["image_url"]["url"]
     assert image_url.startswith("data:image/png;base64,")
     assert (
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-        in image_url
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ"
+        "AAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" in image_url
     )
 
 
-def test_convert_langchain_image_block_default_mime_type():
+def test_convert_langchain_image_block_default_mime_type() -> None:
     """Test that base64 images default to image/jpeg if no mime_type."""
     from langchain_core.messages import HumanMessage
 
@@ -460,15 +464,16 @@ def test_convert_langchain_image_block_default_mime_type():
         HumanMessage(content=[{"block_type": "image", "base64": "fake_base64_data"}])
     ]
 
-    converted = llm._convert_messages_to_nova_format(messages)
+    converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
 
     image_url = converted[0]["content"][0]["image_url"]["url"]
     assert image_url == "data:image/jpeg;base64,fake_base64_data"
 
 
-def test_tools_passed_to_api():
+def test_tools_passed_to_api() -> None:
     """Test that tools from bind_tools are passed to the API request."""
     from unittest.mock import MagicMock, patch
+
     from langchain_core.tools import tool
 
     @tool

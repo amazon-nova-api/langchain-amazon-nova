@@ -1,12 +1,13 @@
 """Integration tests that run against all available Nova models."""
 
+from typing import Any
 import pytest
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from langchain_nova import ChatNova
 
 
-def pytest_generate_tests(metafunc):
+def pytest_generate_tests(metafunc):  # type: ignore
     """Dynamically parametrize tests with available models."""
     if "model_id" in metafunc.fixturenames:
         # Import here to avoid issues if API not available during collection
@@ -28,7 +29,6 @@ def test_invoke_all_models(model_id: str) -> None:
     response = llm.invoke(messages)
     assert response.content
     assert len(response.content) > 0
-    print(f"\n[{model_id}] Response: {response.content[:50]}...")
 
 
 def test_streaming_all_models(model_id: str) -> None:
@@ -42,12 +42,12 @@ def test_streaming_all_models(model_id: str) -> None:
 
     chunks = []
     for chunk in llm.stream(messages):
-        chunks.append(chunk.content)
+        content = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+        chunks.append(content)
 
     full_response = "".join(chunks)
     assert len(full_response) > 0
     assert len(chunks) > 0
-    print(f"\n[{model_id}] Streamed {len(chunks)} chunks, {len(full_response)} chars")
 
 
 @pytest.mark.asyncio
@@ -63,7 +63,6 @@ async def test_ainvoke_all_models(model_id: str) -> None:
     response = await llm.ainvoke(messages)
     assert response.content
     assert len(response.content) > 0
-    print(f"\n[{model_id}] Async response: {response.content[:50]}...")
 
 
 @pytest.mark.asyncio
@@ -78,14 +77,12 @@ async def test_astreaming_all_models(model_id: str) -> None:
 
     chunks = []
     async for chunk in llm.astream(messages):
-        chunks.append(chunk.content)
+        content = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+        chunks.append(content)
 
     full_response = "".join(chunks)
     assert len(full_response) > 0
     assert len(chunks) > 0
-    print(
-        f"\n[{model_id}] Async streamed {len(chunks)} chunks, {len(full_response)} chars"
-    )
 
 
 def test_model_metadata(single_test_model: str) -> None:
@@ -102,10 +99,6 @@ def test_model_metadata(single_test_model: str) -> None:
 
     # Check usage metadata
     assert hasattr(response, "usage_metadata")
-    assert "input_tokens" in response.usage_metadata
-    assert "output_tokens" in response.usage_metadata
-    assert "total_tokens" in response.usage_metadata
-
-    print(f"\n[{single_test_model}] Metadata test passed")
-    print(f"  Response metadata: {response.response_metadata}")
-    print(f"  Usage: {response.usage_metadata}")
+    assert "input_tokens" in response.usage_metadata  # type: ignore
+    assert "output_tokens" in response.usage_metadata  # type: ignore
+    assert "total_tokens" in response.usage_metadata  # type: ignore

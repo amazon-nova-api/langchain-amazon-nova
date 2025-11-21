@@ -1,6 +1,6 @@
 """Unit tests for Nova exception handling."""
 
-import pytest
+from typing import Any
 
 from langchain_nova._exceptions import (
     NovaConfigurationError,
@@ -14,7 +14,7 @@ from langchain_nova._exceptions import (
 )
 
 
-def test_base_nova_error():
+def test_base_nova_error() -> None:
     """Test base NovaError exception."""
     error = NovaError("test message", status_code=500, response={"error": "test"})
 
@@ -23,7 +23,7 @@ def test_base_nova_error():
     assert error.response == {"error": "test"}
 
 
-def test_validation_error():
+def test_validation_error() -> None:
     """Test NovaValidationError (HTTP 400)."""
     error = NovaValidationError("Invalid temperature", response={"error": "bad param"})
 
@@ -32,7 +32,7 @@ def test_validation_error():
     assert error.response == {"error": "bad param"}
 
 
-def test_model_not_found_error():
+def test_model_not_found_error() -> None:
     """Test NovaModelNotFoundError (HTTP 404)."""
     # With custom message
     error = NovaModelNotFoundError("invalid-model", message="Custom message")
@@ -46,7 +46,7 @@ def test_model_not_found_error():
     assert "not found" in str(error).lower()
 
 
-def test_throttling_error():
+def test_throttling_error() -> None:
     """Test NovaThrottlingError (HTTP 429)."""
     error = NovaThrottlingError(
         "Rate limit exceeded", retry_after=60, response={"error": "throttled"}
@@ -58,7 +58,7 @@ def test_throttling_error():
     assert error.response == {"error": "throttled"}
 
 
-def test_model_error():
+def test_model_error() -> None:
     """Test NovaModelError (HTTP 500)."""
     error = NovaModelError("Internal server error", response={"error": "server"})
 
@@ -67,7 +67,7 @@ def test_model_error():
     assert error.response == {"error": "server"}
 
 
-def test_tool_call_error():
+def test_tool_call_error() -> None:
     """Test NovaToolCallError."""
     error = NovaToolCallError("Tool not supported", model_name="nova-lite-v1")
 
@@ -75,7 +75,7 @@ def test_tool_call_error():
     assert error.model_name == "nova-lite-v1"
 
 
-def test_configuration_error():
+def test_configuration_error() -> None:
     """Test NovaConfigurationError."""
     error = NovaConfigurationError("API key not set")
 
@@ -85,14 +85,14 @@ def test_configuration_error():
 class MockHTTPError(Exception):
     """Mock HTTP error for testing."""
 
-    def __init__(self, status_code, message):
+    def __init__(self, status_code: int, message: str) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.message = message
         self.response = {"error": message}
 
 
-def test_map_http_error_400():
+def test_map_http_error_400() -> None:
     """Test mapping HTTP 400 to NovaValidationError."""
     error = MockHTTPError(400, "Bad request")
 
@@ -103,7 +103,7 @@ def test_map_http_error_400():
     assert "Bad request" in str(nova_error)
 
 
-def test_map_http_error_404():
+def test_map_http_error_404() -> None:
     """Test mapping HTTP 404 to NovaModelNotFoundError."""
     error = MockHTTPError(404, "Model not found")
 
@@ -114,7 +114,7 @@ def test_map_http_error_404():
     assert nova_error.model_name == "invalid-model"
 
 
-def test_map_http_error_429():
+def test_map_http_error_429() -> None:
     """Test mapping HTTP 429 to NovaThrottlingError."""
     error = MockHTTPError(429, "Too many requests")
 
@@ -124,7 +124,7 @@ def test_map_http_error_429():
     assert nova_error.status_code == 429
 
 
-def test_map_http_error_500():
+def test_map_http_error_500() -> None:
     """Test mapping HTTP 500 to NovaModelError."""
     error = MockHTTPError(500, "Internal server error")
 
@@ -134,7 +134,7 @@ def test_map_http_error_500():
     assert nova_error.status_code == 500
 
 
-def test_map_http_error_unknown():
+def test_map_http_error_unknown() -> None:
     """Test mapping unknown error to base NovaError."""
     error = Exception("Unknown error")
 
@@ -144,7 +144,7 @@ def test_map_http_error_unknown():
     assert "Unknown error" in str(nova_error)
 
 
-def test_map_http_error_no_status_code():
+def test_map_http_error_no_status_code() -> None:
     """Test mapping error without status code."""
     error = Exception("Generic error")
 
@@ -155,7 +155,7 @@ def test_map_http_error_no_status_code():
     assert "Generic error" in str(nova_error)
 
 
-def test_exception_inheritance():
+def test_exception_inheritance() -> None:
     """Test that all Nova exceptions inherit from NovaError."""
     assert issubclass(NovaValidationError, NovaError)
     assert issubclass(NovaModelNotFoundError, NovaError)
@@ -165,7 +165,7 @@ def test_exception_inheritance():
     assert issubclass(NovaConfigurationError, NovaError)
 
 
-def test_exception_can_be_caught_as_base():
+def test_exception_can_be_caught_as_base() -> None:
     """Test that specific exceptions can be caught as base NovaError."""
     try:
         raise NovaValidationError("test")
@@ -174,7 +174,7 @@ def test_exception_can_be_caught_as_base():
         assert isinstance(e, NovaError)
 
 
-def test_exception_preserves_original_error():
+def test_exception_preserves_original_error() -> None:
     """Test that mapped exceptions preserve original error info."""
     original = MockHTTPError(400, "Original error message")
 
