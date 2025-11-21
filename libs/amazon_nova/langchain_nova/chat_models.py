@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import json
 import os
 from typing import (
@@ -10,6 +11,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Type,
     Union,
 )
 
@@ -34,7 +36,7 @@ from pydantic import (
 )
 
 from langchain_nova._exceptions import map_http_error_to_nova_exception
-from langchain_nova.models import get_model_capabilities, validate_tool_calling
+from langchain_nova.models import ModelCapabilities, get_model_capabilities, validate_tool_calling
 
 
 def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
@@ -256,7 +258,7 @@ class ChatNova(BaseChatModel):
                 api_key_str = None
 
             # Create httpx client with no compression to avoid zstd decompression issues
-            http_client = httpx.AsyncClient(
+            async_http_client = httpx.AsyncClient(
                 headers={"Accept-Encoding": "identity"}, timeout=httpx.Timeout(60)
             )
 
@@ -265,13 +267,13 @@ class ChatNova(BaseChatModel):
                 base_url=self.base_url,
                 timeout=self.timeout,
                 max_retries=self.max_retries,
-                http_client=http_client,
+                http_client=async_http_client,
             )
 
         return self
 
     @property
-    def capabilities(self):
+    def capabilities(self) -> ModelCapabilities:
         """Get capabilities for the current model."""
 
         return get_model_capabilities(self.model_name)
@@ -319,10 +321,10 @@ class ChatNova(BaseChatModel):
 
     def bind_tools(
         self,
-        tools: List[Any],
+        tools: Sequence[Union[Dict[str, Any], Type[Any], Any]],
         strict: bool = True,
         **kwargs: Any,
-    ) -> ChatNova:
+    ) -> Any:
         """Bind tools to the model.
 
         Args:
