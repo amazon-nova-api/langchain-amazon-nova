@@ -1,7 +1,5 @@
 """Unit tests for Nova exception handling."""
 
-from typing import Any
-
 from langchain_nova._exceptions import (
     NovaConfigurationError,
     NovaError,
