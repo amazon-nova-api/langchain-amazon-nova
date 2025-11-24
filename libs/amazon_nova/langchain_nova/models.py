@@ -14,6 +14,8 @@ class ModelCapabilities:
         supports_tool_calling: Whether the model supports function calling
         supports_image_generation: Whether the model can generate images
         supports_streaming: Whether the model supports streaming responses
+        supports_reasoining: Whether the model supports internal CoT prompting
+        supports_audio: Whether the model supports incoming audio
         max_context_tokens: Maximum context window size
         modality: Primary modality of the model
     """
@@ -23,8 +25,12 @@ class ModelCapabilities:
     supports_tool_calling: bool = True
     supports_image_generation: bool = False
     supports_streaming: bool = True
+    supports_reasoning: bool = False
+    supports_audio: bool = False
     max_context_tokens: Optional[int] = None
-    modality: Literal["text", "multimodal", "image-generation"] = "text"
+    modality: Literal["text", "multimodal", "image-generation", "video-generation"] = (
+        "text"
+    )
 
 
 # Registry of known Nova models and their capabilities
