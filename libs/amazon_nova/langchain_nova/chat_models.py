@@ -121,6 +121,8 @@ class ChatNova(BaseChatModel):
             Request metadata for tracking.
         stream_options: Optional[Dict[str, bool]]
             Stream options (e.g., include_usage).
+        system_tools: Optional[List[Literal["nova_grounding", "nova_code_interpreter"]]]
+            System tools (e.g. 'nova_grounding', 'nova_code_interpreter')
 
     Key init args — client:
         api_key: Optional[SecretStr]
@@ -200,6 +202,11 @@ class ChatNova(BaseChatModel):
 
     stream_options: Optional[Dict[str, bool]] = Field(default=None)
     """Stream options, e.g., {'include_usage': True}."""
+
+    system_tools: Optional[List[Literal["nova_grounding", "nova_code_interpreter"]]] = (
+        Field(default=[])
+    )
+    """System tools Nova is allowed access to, e.g. 'nova_grounding'"""
 
     api_key: Optional[Union[SecretStr, str]] = Field(
         default_factory=secret_from_env("NOVA_API_KEY", default=None)
@@ -310,6 +317,7 @@ class ChatNova(BaseChatModel):
             "reasoning_effort": self.reasoning_effort,
             "metadata": self.metadata,
             "stream_options": self.stream_options,
+            "system_tools": self.system_tools,
         }
 
         return {
