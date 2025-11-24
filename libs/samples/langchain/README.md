@@ -32,6 +32,10 @@ export NOVA_API_KEY="your-api-key"
 export NOVA_BASE_URL="https://api.nova.amazon.com/v1"
 ```
 
+## Documentation
+
+For detailed Nova API documentation and parameters: https://nova.amazon.com/dev/documentation
+
 ## Python Examples
 
 Located in `python/` directory:

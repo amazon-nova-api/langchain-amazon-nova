@@ -124,6 +124,9 @@ class ChatNova(BaseChatModel):
         system_tools: Optional[List[Literal["nova_grounding", "nova_code_interpreter"]]]
             System tools (e.g. 'nova_grounding', 'nova_code_interpreter')
 
+    See the official documentation for additional parameters and details:
+        https://nova.amazon.com/dev/documentation
+
     Key init args — client:
         api_key: Optional[SecretStr]
             Nova API key. If not passed in will be read from env var NOVA_API_KEY.
@@ -343,6 +346,7 @@ class ChatNova(BaseChatModel):
             tools: List of tools to bind. Can be LangChain tools, Pydantic models, or dicts.
             strict: If True, validate that the model supports tool calling. Default True.
             **kwargs: Additional arguments passed to the model.
+                For available parameters, see https://nova.amazon.com/dev/documentation
 
         Returns:
             New ChatNova instance with tools bound.
@@ -489,7 +493,19 @@ class ChatNova(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-        """Generate chat completion."""
+        """Generate chat completion.
+
+        Args:
+            messages: List of messages to send to the model.
+            stop: Optional list of stop sequences.
+            run_manager: Optional callback manager.
+            **kwargs: Additional parameters to pass to the Nova API.
+                These override model-level defaults set during initialization.
+                For available parameters, see https://nova.amazon.com/dev/documentation
+
+        Returns:
+            ChatResult with generated message and metadata.
+        """
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level defaults with invoke-level kwargs
@@ -567,7 +583,19 @@ class ChatNova(BaseChatModel):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-        """Async generate chat completion."""
+        """Async generate chat completion.
+
+        Args:
+            messages: List of messages to send to the model.
+            stop: Optional list of stop sequences.
+            run_manager: Optional callback manager.
+            **kwargs: Additional parameters to pass to the Nova API.
+                These override model-level defaults set during initialization.
+                For available parameters, see https://nova.amazon.com/dev/documentation
+
+        Returns:
+            ChatResult with generated message and metadata.
+        """
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level defaults with invoke-level kwargs
@@ -645,7 +673,19 @@ class ChatNova(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Any:
-        """Stream chat completion."""
+        """Stream chat completion.
+
+        Args:
+            messages: List of messages to send to the model.
+            stop: Optional list of stop sequences.
+            run_manager: Optional callback manager.
+            **kwargs: Additional parameters to pass to the Nova API.
+                These override model-level defaults set during initialization.
+                For available parameters, see https://nova.amazon.com/dev/documentation
+
+        Yields:
+            ChatGenerationChunk objects with streamed content.
+        """
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level defaults with invoke-level kwargs
@@ -695,7 +735,19 @@ class ChatNova(BaseChatModel):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Any:
-        """Async stream chat completion."""
+        """Async stream chat completion.
+
+        Args:
+            messages: List of messages to send to the model.
+            stop: Optional list of stop sequences.
+            run_manager: Optional callback manager.
+            **kwargs: Additional parameters to pass to the Nova API.
+                These override model-level defaults set during initialization.
+                For available parameters, see https://nova.amazon.com/dev/documentation
+
+        Yields:
+            ChatGenerationChunk objects with streamed content.
+        """
         openai_messages = self._convert_messages_to_nova_format(messages)
 
         # Merge model-level defaults with invoke-level kwargs

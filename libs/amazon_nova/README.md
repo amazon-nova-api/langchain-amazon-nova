@@ -41,6 +41,10 @@ export NOVA_API_KEY="your-api-key"
 export NOVA_BASE_URL="https://api.nova.amazon.com/v1"
 ```
 
+## Documentation
+
+For detailed API documentation and additional parameters, see: https://nova.amazon.com/dev/documentation
+
 ## Supported Models
 
 Amazon Nova offers several model variants:
