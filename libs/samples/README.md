@@ -15,21 +15,6 @@ samples/
 ├── simple_chat/        # Basic chat examples
 ```
 
-## Quick Start
-
-Each directory has its own `pyproject.toml` for managing virtual environments:
-
-```bash
-# Example: LangGraph Python samples
-cd langgraph/python/
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-
-# Run an example
-python agent_with_tools.py --verbose
-```
-
 ## Environment Setup
 
 All examples require environment variables:
@@ -37,6 +22,22 @@ All examples require environment variables:
 ```bash
 export NOVA_API_KEY="your-api-key"
 export NOVA_BASE_URL="https://api.nova.amazon.com/v1"
+```
+
+## Quick Start
+
+Each directory has its own `pyproject.toml` for managing virtual environments:
+
+```bash
+# Example: LangGraph Python samples
+git clone https://github.com/nova-ai-api/langchain-nova.git
+cd langchain-nova/libs/samples/simple_chat
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+
+# Run an example
+python interactive_chat.py --verbose --streaming
 ```
 
 ## Documentation
