@@ -35,8 +35,8 @@ from pydantic import (
     model_validator,
 )
 
-from langchain_amazon-nova._exceptions import map_http_error_to_nova_exception
-from langchain_amazon-nova.models import (
+from langchain_amazon_nova._exceptions import map_http_error_to_nova_exception
+from langchain_amazon_nova.models import (
     ModelCapabilities,
     get_model_capabilities,
     validate_tool_calling,
