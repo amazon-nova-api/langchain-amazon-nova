@@ -1,8 +1,9 @@
-"""Output parser examples with ChatNova."""
+"""Output parser examples with ChatAmazonNova."""
 
 import argparse
 from typing import List
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.output_parsers import (
     CommaSeparatedListOutputParser,
     JsonOutputParser,
@@ -11,8 +12,6 @@ from langchain_core.output_parsers import (
 )
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-
-from langchain_nova import ChatNova
 
 
 class Person(BaseModel):
@@ -37,7 +36,7 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
-    llm = ChatNova(model=args.model, temperature=0)
+    llm = ChatAmazonNova(model=args.model, temperature=0)
 
     if args.verbose:
         print(f"\n[DEBUG] Using model: {args.model}")
@@ -59,15 +58,11 @@ def main():
     print("=== 2. Comma-Separated List Parser ===\n")
 
     list_parser = CommaSeparatedListOutputParser()
-    prompt = ChatPromptTemplate.from_template(
-        "List 5 {category}.\n{format_instructions}"
-    )
+    prompt = ChatPromptTemplate.from_template("List 5 {category}.\n{format_instructions}")
 
     if args.verbose:
         print("[DEBUG] Using CommaSeparatedListOutputParser")
-        print(
-            f"[DEBUG] Format instructions: {list_parser.get_format_instructions()[:50]}..."
-        )
+        print(f"[DEBUG] Format instructions: {list_parser.get_format_instructions()[:50]}...")
 
     chain = prompt | llm | list_parser
     result = chain.invoke(

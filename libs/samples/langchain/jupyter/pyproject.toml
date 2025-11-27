@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Jupyter notebook examples using LangChain with Amazon Nova"
 requires-python = ">=3.10"
 dependencies = [
-    "langchain-nova",
+    "langchain-amazon-nova @ git+https://github.com/nova-ai-api/langchain-amazon-nova.git#subdirectory=libs/amazon_nova",
     "langchain-core>=0.3.0",
     "langchain-text-splitters>=0.3.0",
     "jupyter>=1.0.0",

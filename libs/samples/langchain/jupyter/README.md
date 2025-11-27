@@ -1,4 +1,4 @@
-# LangChain with ChatNova - Jupyter Notebooks
+# LangChain with ChatAmazonNova - Jupyter Notebooks
 
 Interactive Jupyter notebook examples for using LangChain with Amazon Nova models.
 

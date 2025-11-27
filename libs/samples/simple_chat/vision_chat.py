@@ -14,8 +14,8 @@ import argparse
 import base64
 from pathlib import Path
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import HumanMessage
-from langchain_nova import ChatNova
 
 
 def encode_image_to_base64(image_path: str) -> str:
@@ -46,7 +46,7 @@ def example_single_image_url(model: str = "nova-pro-v1", verbose: bool = False):
     """Example 1: Simple image URL with question."""
     print("Example 1: Single Image URL\n")
 
-    llm = ChatNova(model=model, temperature=0.8)
+    llm = ChatAmazonNova(model=model, temperature=0.8)
 
     # Create message with image URL
     message = HumanMessage(
@@ -78,7 +78,7 @@ def example_multiple_images(model: str = "nova-pro-v1", verbose: bool = False):
     """Example 2: Multiple images in one request."""
     print("Example 2: Multiple Images\n")
 
-    llm = ChatNova(model=model, temperature=0.8)
+    llm = ChatAmazonNova(model=model, temperature=0.8)
 
     message = HumanMessage(
         content=[
@@ -117,7 +117,7 @@ def example_base64_image(
     """Example 3: Base64 encoded local image."""
     print(f"Example 3: Base64 Encoded Image\n")
 
-    llm = ChatNova(model=model, temperature=0.8)
+    llm = ChatAmazonNova(model=model, temperature=0.8)
 
     # Encode local image to base64
     if verbose:
@@ -144,7 +144,7 @@ def example_conversation_with_images(model: str = "nova-pro-v1", verbose: bool =
     """Example 4: Multi-turn conversation with images."""
     print("Example 4: Conversation with Images\n")
 
-    llm = ChatNova(model=model, temperature=0.8)
+    llm = ChatAmazonNova(model=model, temperature=0.8)
 
     # First turn: Ask about image
     message1 = HumanMessage(
@@ -204,7 +204,7 @@ def main():
     args = parser.parse_args()
 
     # Check if model supports vision
-    from langchain_nova.models import get_model_capabilities
+    from langchain_amazon_nova.models import get_model_capabilities
 
     caps = get_model_capabilities(args.model)
     if not caps.supports_vision:

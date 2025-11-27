@@ -5,8 +5,8 @@ This script shows how to catch and handle different Nova error types.
 
 import argparse
 
-from langchain_nova import (
-    ChatNova,
+from langchain_amazon_nova import (
+    ChatAmazonNova,
     NovaConfigurationError,
     NovaError,
     NovaModelError,
@@ -20,7 +20,7 @@ def example_catch_specific_errors():
     """Example: Catch specific error types."""
     print("Example 1: Catching specific error types\n")
 
-    llm = ChatNova(model="invalid-model-xyz", temperature=0.7)
+    llm = ChatAmazonNova(model="invalid-model-xyz", temperature=0.7)
 
     try:
         llm.invoke("Hello!")
@@ -39,7 +39,7 @@ def example_catch_base_error():
     """Example: Catch all Nova errors with base exception."""
     print("\nExample 2: Catching all Nova errors with base exception\n")
 
-    llm = ChatNova(model="invalid-model", temperature=0.7)
+    llm = ChatAmazonNova(model="invalid-model", temperature=0.7)
 
     try:
         llm.invoke("Hello!")
@@ -58,7 +58,7 @@ def example_retry_on_throttle():
 
     print("\nExample 3: Handling throttling with retry\n")
 
-    llm = ChatNova(model="nova-pro-v1", temperature=0.7)
+    llm = ChatAmazonNova(model="nova-pro-v1", temperature=0.7)
 
     max_retries = 3
     for attempt in range(max_retries):
@@ -86,7 +86,7 @@ def example_validation_fallback():
 
     for model in models_to_try:
         try:
-            llm = ChatNova(model=model, temperature=0.7)
+            llm = ChatAmazonNova(model=model, temperature=0.7)
             response = llm.invoke("Hello!")
             print(f"Success with {model}: {response.content[:50]}...")
             break
@@ -103,14 +103,14 @@ def example_graceful_degradation():
     print("\nExample 5: Graceful degradation\n")
 
     try:
-        llm = ChatNova(model="nova-pro-v1", temperature=0.7, max_tokens=10)
+        llm = ChatAmazonNova(model="nova-pro-v1", temperature=0.7, max_tokens=10)
         response = llm.invoke("Write a long essay about AI")
         print(f"Response: {response.content}")
 
         if response.response_metadata.get("finish_reason") == "length":
             print("\nResponse was truncated due to max_tokens limit")
 
-            llm_unlimited = ChatNova(model="nova-pro-v1", temperature=0.7)
+            llm_unlimited = ChatAmazonNova(model="nova-pro-v1", temperature=0.7)
             full_response = llm_unlimited.invoke("Write a long essay about AI")
             print(f"Full response: {full_response.content[:100]}...")
     except NovaModelError as e:

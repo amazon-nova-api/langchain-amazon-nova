@@ -1,4 +1,4 @@
-"""Agent with tools using LangGraph and ChatNova.
+"""Agent with tools using LangGraph and ChatAmazonNova.
 
 This example demonstrates a basic agent that can use tools to answer questions.
 The agent reasons about which tools to use and executes them in a loop.
@@ -7,12 +7,11 @@ The agent reasons about which tools to use and executes them in a loop.
 import argparse
 from typing import Annotated, Literal, TypedDict
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langchain_core.tools import tool
-from langgraph.graph import StateGraph, MessagesState, START, END
+from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
-
-from langchain_nova import ChatNova
 
 
 # Define tools
@@ -58,7 +57,7 @@ def calculate(operation: str, a: float, b: float) -> str:
         "subtract": a - b,
         "multiply": a * b,
         "divide": a / b if b != 0 else "Error: Division by zero",
-        "power": a ** b,
+        "power": a**b,
     }
 
     if operation not in operations:
@@ -145,7 +144,7 @@ def create_agent_graph(llm, tools, verbose: bool = False):
         {
             "tools": "tools",
             "end": END,
-        }
+        },
     )
 
     # After tools, always go back to agent
@@ -159,12 +158,14 @@ def main() -> None:
     parser.add_argument("--model", type=str, default="nova-pro-v1", help="Nova model to use")
     parser.add_argument("--query", type=str, help="Query to run (non-interactive mode)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
-    parser.add_argument("--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort")
+    parser.add_argument(
+        "--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort"
+    )
     parser.add_argument("--top-p", type=float, help="Top-p sampling (0.0-1.0)")
     args = parser.parse_args()
 
     # Initialize model
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0,  # Use 0 for consistent tool calling
         reasoning_effort=args.reasoning,

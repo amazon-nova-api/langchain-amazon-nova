@@ -1,17 +1,16 @@
-"""Simple stateful chatbot using LangGraph and ChatNova.
+"""Simple stateful chatbot using LangGraph and ChatAmazonNova.
 
 This example demonstrates a basic chatbot that maintains conversation history
 using LangGraph's state management.
 """
 
 import argparse
-from typing import TypedDict, Annotated
+from typing import Annotated, TypedDict
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import HumanMessage, SystemMessage, trim_messages
-from langgraph.graph import StateGraph, START, MessagesState
+from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.graph.message import add_messages
-
-from langchain_nova import ChatNova
 
 
 def call_model(state: MessagesState, llm, verbose: bool = False) -> dict:
@@ -52,13 +51,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Simple stateful chatbot with LangGraph")
     parser.add_argument("--model", type=str, default="nova-pro-v1", help="Nova model to use")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
-    parser.add_argument("--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort")
+    parser.add_argument(
+        "--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort"
+    )
     parser.add_argument("--top-p", type=float, help="Top-p sampling (0.0-1.0)")
-    parser.add_argument("--max-history", type=int, default=10, help="Maximum messages to keep in history")
+    parser.add_argument(
+        "--max-history", type=int, default=10, help="Maximum messages to keep in history"
+    )
     args = parser.parse_args()
 
     # Initialize model
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         reasoning_effort=args.reasoning,
@@ -102,7 +105,7 @@ def main() -> None:
             for i, msg in enumerate(conversation_state["messages"]):
                 role = "User" if msg.type == "human" else "Assistant"
                 content = msg.content[:100] + "..." if len(msg.content) > 100 else msg.content
-                print(f"{i+1}. {role}: {content}")
+                print(f"{i + 1}. {role}: {content}")
             print()
             continue
 
@@ -111,13 +114,19 @@ def main() -> None:
             conversation_state["messages"].append(HumanMessage(content=user_input))
 
             # Trim history if needed (keep most recent messages)
-            if len(conversation_state["messages"]) > args.max_history * 2:  # *2 for user+assistant pairs
+            if (
+                len(conversation_state["messages"]) > args.max_history * 2
+            ):  # *2 for user+assistant pairs
                 # Keep system message if present, then most recent messages
                 if conversation_state["messages"][0].type == "system":
                     system_msg = conversation_state["messages"][0]
-                    conversation_state["messages"] = [system_msg] + conversation_state["messages"][-(args.max_history * 2):]
+                    conversation_state["messages"] = [system_msg] + conversation_state["messages"][
+                        -(args.max_history * 2) :
+                    ]
                 else:
-                    conversation_state["messages"] = conversation_state["messages"][-(args.max_history * 2):]
+                    conversation_state["messages"] = conversation_state["messages"][
+                        -(args.max_history * 2) :
+                    ]
 
                 if args.verbose:
                     print("[DEBUG] Trimmed conversation history")
@@ -135,7 +144,10 @@ def main() -> None:
         except Exception as e:
             print(f"\nError: {e}\n")
             # Remove the failed user message
-            if conversation_state["messages"] and conversation_state["messages"][-1].content == user_input:
+            if (
+                conversation_state["messages"]
+                and conversation_state["messages"][-1].content == user_input
+            ):
                 conversation_state["messages"].pop()
 
 

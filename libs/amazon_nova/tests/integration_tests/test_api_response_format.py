@@ -8,8 +8,8 @@ import pytest
 from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 
-from langchain_nova import ChatNova
-from langchain_nova._exceptions import (
+from langchain_amazon_nova import ChatAmazonNova
+from langchain_amazon_nova._exceptions import (
     NovaError,
     NovaModelNotFoundError,
 )
@@ -40,7 +40,7 @@ def test_basic_response_structure() -> None:
         }
     }
     """
-    llm = ChatNova(model="nova-pro-v1", temperature=0.7)
+    llm = ChatAmazonNova(model="nova-pro-v1", temperature=0.7)
 
     response = llm.invoke("Hello!")
 
@@ -84,7 +84,7 @@ def test_streaming_response_structure() -> None:
     - choices[0].delta.content
     - choices[0].delta.role (only first chunk)
     """
-    llm = ChatNova(model="nova-pro-v1", temperature=0.7)
+    llm = ChatAmazonNova(model="nova-pro-v1", temperature=0.7)
 
     chunks = list(llm.stream("Tell me a one-sentence fact."))
 
@@ -103,7 +103,7 @@ def test_streaming_with_usage_metadata() -> None:
 
     When include_usage=true, the final chunk should include usage data.
     """
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1", temperature=0.7, stream_options={"include_usage": True}
     )
 
@@ -148,7 +148,7 @@ def test_tool_call_response_format() -> None:
         """Get weather for a location."""
         return f"Weather in {location}: sunny, 72°F"
 
-    llm = ChatNova(model="nova-pro-v1", temperature=0.7).bind_tools([get_weather])
+    llm = ChatAmazonNova(model="nova-pro-v1", temperature=0.7).bind_tools([get_weather])
 
     response = llm.invoke("What's the weather in Paris?")
 
@@ -177,7 +177,7 @@ def test_tool_call_response_format() -> None:
 @pytest.mark.integration
 def test_max_tokens_enforced() -> None:
     """Verify max_tokens actually limits response length."""
-    llm = ChatNova(model="nova-pro-v1", max_tokens=20)
+    llm = ChatAmazonNova(model="nova-pro-v1", max_tokens=20)
 
     response = llm.invoke(
         "Write a long story about space exploration with many details."
@@ -196,7 +196,7 @@ def test_max_tokens_enforced() -> None:
 def test_reasoning_effort_parameter() -> None:
     """Verify reasoning_effort parameter is accepted."""
     for effort_str in ["low", "medium", "high"]:
-        llm = ChatNova(
+        llm = ChatAmazonNova(
             model="nova-pro-v1",
             reasoning_effort=cast(Literal["low", "medium", "high"], effort_str),
             temperature=0.3,
@@ -212,7 +212,7 @@ def test_reasoning_effort_parameter() -> None:
 @pytest.mark.integration
 def test_top_p_parameter() -> None:
     """Verify top_p parameter is accepted."""
-    llm = ChatNova(model="nova-pro-v1", top_p=0.9, temperature=0.8)
+    llm = ChatAmazonNova(model="nova-pro-v1", top_p=0.9, temperature=0.8)
 
     response = llm.invoke("Hello!")
 
@@ -224,7 +224,7 @@ def test_top_p_parameter() -> None:
 @pytest.mark.integration
 def test_metadata_parameter() -> None:
     """Verify metadata parameter is accepted without errors."""
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         metadata={
             "user_id": "test123",
@@ -253,7 +253,7 @@ def test_multi_content_message() -> None:
         ]
     }
     """
-    llm = ChatNova(model="nova-pro-v1", temperature=0.7)
+    llm = ChatAmazonNova(model="nova-pro-v1", temperature=0.7)
 
     # Single content string format
     response = llm.invoke("Hello!")
@@ -269,7 +269,7 @@ def test_error_response_codes() -> None:
     This is a basic smoke test that exceptions are raised.
     More specific tests are in separate test functions.
     """
-    llm = ChatNova(model="invalid-model-name-xyz", temperature=0.7)
+    llm = ChatAmazonNova(model="invalid-model-name-xyz", temperature=0.7)
 
     with pytest.raises(NovaError):
         llm.invoke("Hello!")
@@ -281,7 +281,7 @@ def test_invalid_model_raises_model_not_found() -> None:
 
     Expected error code: 404 ModelNotFoundException
     """
-    llm = ChatNova(model="invalid-model-name-xyz", temperature=0.7)
+    llm = ChatAmazonNova(model="invalid-model-name-xyz", temperature=0.7)
 
     with pytest.raises(NovaModelNotFoundError) as exc_info:
         llm.invoke("Hello!")
@@ -293,7 +293,7 @@ def test_invalid_model_raises_model_not_found() -> None:
 @pytest.mark.integration
 def test_all_exceptions_inherit_from_nova_error() -> None:
     """Verify all Nova exceptions inherit from NovaError for easy catching."""
-    llm = ChatNova(model="invalid-xyz", temperature=0.7)
+    llm = ChatAmazonNova(model="invalid-xyz", temperature=0.7)
 
     with pytest.raises(Exception) as exc_info:
         llm.invoke("Hello!")
@@ -313,7 +313,7 @@ def test_all_exceptions_inherit_from_nova_error() -> None:
 @pytest.mark.integration
 def test_per_call_parameter_override() -> None:
     """Verify per-call parameters override model-level defaults."""
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1", max_tokens=50, temperature=0.5, reasoning_effort="low"
     )
 

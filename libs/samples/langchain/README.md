@@ -1,4 +1,4 @@
-# LangChain Patterns with ChatNova
+# LangChain Patterns with ChatAmazonNova
 
 Examples demonstrating LangChain integration patterns using Amazon Nova models.
 

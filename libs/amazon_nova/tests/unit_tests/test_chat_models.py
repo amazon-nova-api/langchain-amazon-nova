@@ -1,16 +1,16 @@
-"""Basic unit tests for ChatNova."""
+"""Basic unit tests for ChatAmazonNova."""
 
 from typing import Literal, cast
 
 import pytest
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 
-def test_chatnova_initialization() -> None:
-    """Test that ChatNova can be initialized."""
-    llm = ChatNova(
+def test_chat_amazon_nova_initialization() -> None:
+    """Test that ChatAmazonNova can be initialized."""
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         temperature=0.7,
         api_key="test-key",
@@ -19,15 +19,15 @@ def test_chatnova_initialization() -> None:
     assert llm.temperature == 0.7
 
 
-def test_chatnova_model_name_alias() -> None:
+def test_chat_amazon_nova_model_name_alias() -> None:
     """Test that 'model' alias works for model_name."""
-    llm = ChatNova(model="nova-micro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-micro-v1", api_key="test-key")
     assert llm.model_name == "nova-micro-v1"
 
 
-def test_chatnova_serialization() -> None:
-    """Test that ChatNova can be serialized without exposing secrets."""
-    llm = ChatNova(
+def test_chat_amazon_nova_serialization() -> None:
+    """Test that ChatAmazonNova can be serialized without exposing secrets."""
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         temperature=0.5,
         api_key="secret-key",
@@ -43,15 +43,15 @@ def test_chatnova_serialization() -> None:
     assert params["temperature"] == 0.5
 
 
-def test_chatnova_llm_type() -> None:
-    """Test that ChatNova returns correct LLM type."""
-    llm = ChatNova(api_key="test-key")
+def test_chat_amazon_nova_llm_type() -> None:
+    """Test that ChatAmazonNova returns correct LLM type."""
+    llm = ChatAmazonNova(api_key="test-key")
     assert llm._llm_type == "nova-chat"
 
 
-def test_chatnova_message_conversion() -> None:
+def test_chat_amazon_nova_message_conversion() -> None:
     """Test message conversion to OpenAI format."""
-    llm = ChatNova(api_key="test-key")
+    llm = ChatAmazonNova(api_key="test-key")
 
     messages = [
         SystemMessage(content="You are a helpful assistant."),
@@ -67,42 +67,42 @@ def test_chatnova_message_conversion() -> None:
     assert converted[1]["content"] == "Hello!"
 
 
-def test_chatnova_default_base_url() -> None:
+def test_chat_amazon_nova_default_base_url() -> None:
     """Test that default base URL is set."""
-    llm = ChatNova(api_key="test-key")
+    llm = ChatAmazonNova(api_key="test-key")
     assert llm.base_url is not None
     assert isinstance(llm.base_url, str)
 
 
-def test_chatnova_custom_base_url() -> None:
+def test_chat_amazon_nova_custom_base_url() -> None:
     """Test that custom base URL can be set."""
     custom_url = "https://custom.example.com/v1"
-    llm = ChatNova(api_key="test-key", base_url=custom_url)
+    llm = ChatAmazonNova(api_key="test-key", base_url=custom_url)
     assert llm.base_url == custom_url
 
 
-def test_chatnova_max_tokens_validation() -> None:
+def test_chat_amazon_nova_max_tokens_validation() -> None:
     """Test that max_tokens must be positive."""
     with pytest.raises(ValueError):
-        ChatNova(api_key="test-key", max_tokens=0)
+        ChatAmazonNova(api_key="test-key", max_tokens=0)
 
     with pytest.raises(ValueError):
-        ChatNova(api_key="test-key", max_tokens=-1)
+        ChatAmazonNova(api_key="test-key", max_tokens=-1)
 
 
-def test_chatnova_temperature_validation() -> None:
+def test_chat_amazon_nova_temperature_validation() -> None:
     """Test that temperature is within valid range."""
     with pytest.raises(ValueError):
-        ChatNova(api_key="test-key", temperature=-0.1)
+        ChatAmazonNova(api_key="test-key", temperature=-0.1)
 
     with pytest.raises(ValueError):
-        ChatNova(api_key="test-key", temperature=1.1)
+        ChatAmazonNova(api_key="test-key", temperature=1.1)
 
     # Valid temperatures should work
-    llm = ChatNova(api_key="test-key", temperature=0.0)
+    llm = ChatAmazonNova(api_key="test-key", temperature=0.0)
     assert llm.temperature == 0.0
 
-    llm = ChatNova(api_key="test-key", temperature=1.0)
+    llm = ChatAmazonNova(api_key="test-key", temperature=1.0)
     assert llm.temperature == 1.0
 
 
@@ -111,29 +111,31 @@ def test_chatnova_temperature_validation() -> None:
 
 def test_max_completion_tokens_initialization() -> None:
     """Test that max_completion_tokens can be set at initialization."""
-    llm = ChatNova(model="nova-pro-v1", max_completion_tokens=200, api_key="test-key")
+    llm = ChatAmazonNova(
+        model="nova-pro-v1", max_completion_tokens=200, api_key="test-key"
+    )
     assert llm.max_completion_tokens == 200
 
 
 def test_top_p_initialization() -> None:
     """Test that top_p can be set at initialization."""
-    llm = ChatNova(model="nova-pro-v1", top_p=0.9, api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", top_p=0.9, api_key="test-key")
     assert llm.top_p == 0.9
 
 
 def test_top_p_validation() -> None:
     """Test that top_p is validated to be between 0 and 1."""
     with pytest.raises(ValueError):
-        ChatNova(model="nova-pro-v1", top_p=1.5, api_key="test-key")
+        ChatAmazonNova(model="nova-pro-v1", top_p=1.5, api_key="test-key")
 
     with pytest.raises(ValueError):
-        ChatNova(model="nova-pro-v1", top_p=-0.1, api_key="test-key")
+        ChatAmazonNova(model="nova-pro-v1", top_p=-0.1, api_key="test-key")
 
 
 def test_reasoning_effort_initialization() -> None:
     """Test that reasoning_effort can be set at initialization."""
     for effort in ["low", "medium", "high"]:
-        llm = ChatNova(
+        llm = ChatAmazonNova(
             model="nova-pro-v1",
             reasoning_effort=cast(Literal["low", "medium", "high"], effort),
             api_key="test-key",
@@ -144,14 +146,16 @@ def test_reasoning_effort_initialization() -> None:
 def test_metadata_initialization() -> None:
     """Test that metadata can be set at initialization."""
     metadata = {"user_id": "123", "session_id": "abc"}
-    llm = ChatNova(model="nova-pro-v1", metadata=metadata, api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", metadata=metadata, api_key="test-key")
     assert llm.metadata == metadata
 
 
 def test_stream_options_initialization() -> None:
     """Test that stream_options can be set at initialization."""
     stream_opts = {"include_usage": True}
-    llm = ChatNova(model="nova-pro-v1", stream_options=stream_opts, api_key="test-key")
+    llm = ChatAmazonNova(
+        model="nova-pro-v1", stream_options=stream_opts, api_key="test-key"
+    )
     assert llm.stream_options == stream_opts
 
 
@@ -184,7 +188,7 @@ def test_response_structure_fields() -> None:
         }
     }
     """
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     # Verify we're converting the response properly
     # The actual API validation happens in integration tests
@@ -279,7 +283,7 @@ def test_convert_text_message() -> None:
     """Test converting simple text message."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [HumanMessage(content="Hello")]
     converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
@@ -293,7 +297,7 @@ def test_convert_image_url_message() -> None:
     """Test converting message with image_url content."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     # OpenAI format with image_url
     messages = [
@@ -333,7 +337,7 @@ def test_convert_image_url_string_format() -> None:
     """Test converting image_url when it's a string instead of dict."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [
         HumanMessage(
@@ -358,7 +362,7 @@ def test_convert_mixed_content_types() -> None:
     """Test converting message with multiple content types."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [
         HumanMessage(
@@ -390,7 +394,7 @@ def test_convert_string_in_list() -> None:
     """Test that strings in content list are converted to text blocks."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [HumanMessage(content=["Hello", "World"])]
     converted = llm._convert_messages_to_nova_format(cast(list[BaseMessage], messages))
@@ -404,7 +408,7 @@ def test_convert_langchain_image_block_with_url() -> None:
     """Test converting LangChain image block (block_type='image') with URL."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     # LangChain uses block_type = "image" with url property
     messages = [
@@ -427,7 +431,7 @@ def test_convert_langchain_image_block_with_base64() -> None:
     """Test converting LangChain image block with base64 data."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     # LangChain image block with base64
     messages = [
@@ -463,7 +467,7 @@ def test_convert_langchain_image_block_default_mime_type() -> None:
     """Test that base64 images default to image/jpeg if no mime_type."""
     from langchain_core.messages import HumanMessage
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     messages = [
         HumanMessage(content=[{"block_type": "image", "base64": "fake_base64_data"}])
@@ -486,7 +490,7 @@ def test_tools_passed_to_api() -> None:
         """Get weather for a location."""
         return f"Weather in {location}"
 
-    llm = ChatNova(model="nova-pro-v1", api_key="test-key")
+    llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
 
     # Mock the client
     mock_response = MagicMock()

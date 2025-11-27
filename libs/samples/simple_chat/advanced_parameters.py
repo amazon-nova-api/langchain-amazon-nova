@@ -20,14 +20,14 @@ Usage:
 import argparse
 import json
 
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 
 def demo_basic_parameters():
     """Demonstrate basic parameter usage."""
     print("\n=== Basic Parameters Demo ===\n")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         temperature=0.7,
         max_tokens=150,
@@ -54,7 +54,7 @@ def demo_reasoning_effort():
         print(f"\nReasoning effort: {effort}")
         print("-" * 40)
 
-        llm = ChatNova(
+        llm = ChatAmazonNova(
             model="nova-pro-v1",
             temperature=0.3,
             reasoning_effort=effort,
@@ -75,7 +75,7 @@ def demo_token_limits():
         print(f"\nMax tokens: {max_tokens}")
         print("-" * 40)
 
-        llm = ChatNova(
+        llm = ChatAmazonNova(
             model="nova-pro-v1",
             temperature=0.8,
             max_tokens=max_tokens,
@@ -98,7 +98,7 @@ def demo_top_p_sampling():
         print(f"\nTop-p: {top_p}")
         print("-" * 40)
 
-        llm = ChatNova(
+        llm = ChatAmazonNova(
             model="nova-pro-v1",
             temperature=0.9,
             top_p=top_p,
@@ -113,7 +113,7 @@ def demo_streaming_with_usage():
     """Demonstrate streaming with usage metadata."""
     print("\n=== Streaming with Usage Metadata ===\n")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         temperature=0.7,
         max_tokens=150,
@@ -133,7 +133,7 @@ def demo_per_call_overrides():
     """Demonstrate per-call parameter overrides."""
     print("\n=== Per-Call Parameter Overrides ===\n")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         temperature=0.5,
         max_tokens=100,
@@ -161,7 +161,7 @@ def demo_metadata_tracking():
     """Demonstrate metadata for request tracking."""
     print("\n=== Metadata Tracking Demo ===\n")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model="nova-pro-v1",
         temperature=0.7,
         metadata={
@@ -185,12 +185,12 @@ def demo_max_completion_tokens():
     print("\n=== max_completion_tokens vs max_tokens ===\n")
 
     print("Using max_tokens:")
-    llm1 = ChatNova(model="nova-pro-v1", max_tokens=50)
+    llm1 = ChatAmazonNova(model="nova-pro-v1", max_tokens=50)
     response1 = llm1.invoke("Count from 1 to 100.")
     print(f"{response1.content}\n")
 
     print("Using max_completion_tokens (OpenAI compatible):")
-    llm2 = ChatNova(model="nova-pro-v1", max_completion_tokens=50)
+    llm2 = ChatAmazonNova(model="nova-pro-v1", max_completion_tokens=50)
     response2 = llm2.invoke("Count from 1 to 100.")
     print(f"{response2.content}\n")
 

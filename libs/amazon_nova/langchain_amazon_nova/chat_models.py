@@ -35,8 +35,8 @@ from pydantic import (
     model_validator,
 )
 
-from langchain_nova._exceptions import map_http_error_to_nova_exception
-from langchain_nova.models import (
+from langchain_amazon-nova._exceptions import map_http_error_to_nova_exception
+from langchain_amazon-nova.models import (
     ModelCapabilities,
     get_model_capabilities,
     validate_tool_calling,
@@ -90,15 +90,15 @@ def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
     return convert_to_openai_tool(tool)
 
 
-class ChatNova(BaseChatModel):
+class ChatAmazonNova(BaseChatModel):
     """Amazon Nova chat model integration.
 
     Amazon Nova models are OpenAI-compatible and accessed via the OpenAI SDK
     pointed at Nova's endpoint.
 
     Setup:
-        Install langchain-nova:
-            pip install langchain-nova
+        Install langchain-amazon-nova:
+            pip install langchain-amazon-nova
 
         Set environment variables:
             export NOVA_API_KEY="your-api-key"
@@ -136,9 +136,9 @@ class ChatNova(BaseChatModel):
     Instantiate:
         .. code-block:: python
 
-            from langchain_nova import ChatNova
+            from langchain_amazon_nova import ChatAmazonNova
 
-            llm = ChatNova(
+            llm = ChatAmazonNova(
                 model="nova-pro-v1",
                 temperature=0.7,
                 max_tokens=2048,
@@ -246,7 +246,7 @@ class ChatNova(BaseChatModel):
     )
 
     @model_validator(mode="after")
-    def validate_environment(self) -> ChatNova:
+    def validate_environment(self) -> ChatAmazonNova:
         """Validate environment and create OpenAI client."""
         if self.client is None:
             if self.api_key:
@@ -320,7 +320,9 @@ class ChatNova(BaseChatModel):
             "reasoning_effort": self.reasoning_effort,
             "metadata": self.metadata,
             "stream_options": self.stream_options,
-            "system_tools": self.system_tools,
+            "extra_headers": {
+                "system_tools": self.system_tools,
+            },
         }
 
         return {
@@ -349,7 +351,7 @@ class ChatNova(BaseChatModel):
                 For available parameters, see https://nova.amazon.com/dev/documentation
 
         Returns:
-            New ChatNova instance with tools bound.
+            New ChatAmazonNova instance with tools bound.
 
         Raises:
             ValueError: If strict=True and the model doesn't support tool calling.
@@ -364,7 +366,7 @@ class ChatNova(BaseChatModel):
     def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
         """Not implemented yet for Nova."""
         raise NotImplementedError(
-            "with_structured_output is not yet implemented for ChatNova"
+            "with_structured_output is not yet implemented for ChatAmazonNova"
         )
 
     def _convert_messages_to_nova_format(
@@ -791,4 +793,4 @@ class ChatNova(BaseChatModel):
                 yield ChatGenerationChunk(message=message_chunk)
 
 
-__all__ = ["ChatNova"]
+__all__ = ["ChatAmazonNova"]

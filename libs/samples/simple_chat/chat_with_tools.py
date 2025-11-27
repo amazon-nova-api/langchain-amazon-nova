@@ -15,9 +15,9 @@ import json
 from datetime import datetime
 from typing import Literal
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
-from langchain_nova import ChatNova
 
 
 @tool
@@ -116,7 +116,9 @@ def main():
 
     # Initialize model with tools
     tools = [get_current_weather, get_current_time, calculate]
-    llm = ChatNova(model=args.model, temperature=args.temperature).bind_tools(tools)
+    llm = ChatAmazonNova(model=args.model, temperature=args.temperature).bind_tools(
+        tools
+    )
 
     # Create tool map for execution
     tool_map = {t.name: t for t in tools}

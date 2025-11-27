@@ -1,18 +1,18 @@
-"""Async ChatNova usage example."""
+"""Async ChatAmazonNova usage example."""
 
 import argparse
 import asyncio
 import time
 
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 
 async def main(args):
     # Initialize the model
     if args.verbose:
-        print(f"\n[DEBUG] Initializing ChatNova with model: {args.model}")
+        print(f"\n[DEBUG] Initializing ChatAmazonNova with model: {args.model}")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         max_tokens=2048,
@@ -70,7 +70,7 @@ async def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Async ChatNova usage example")
+    parser = argparse.ArgumentParser(description="Async ChatAmazonNova usage example")
     parser.add_argument(
         "--model",
         type=str,

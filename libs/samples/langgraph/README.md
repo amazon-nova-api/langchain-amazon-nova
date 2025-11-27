@@ -1,4 +1,4 @@
-# LangGraph Patterns with ChatNova
+# LangGraph Patterns with ChatAmazonNova
 
 Examples demonstrating LangGraph integration patterns using Amazon Nova models. LangGraph enables building stateful, multi-actor applications with LLMs.
 
@@ -106,4 +106,4 @@ All Python examples support:
 ## Learn More
 
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [ChatNova Documentation](../../amazon_nova/README.md)
+- [ChatAmazonNova Documentation](../../amazon_nova/README.md)

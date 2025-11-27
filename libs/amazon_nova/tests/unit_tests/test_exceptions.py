@@ -1,6 +1,6 @@
 """Unit tests for Nova exception handling."""
 
-from langchain_nova._exceptions import (
+from langchain_amazon_nova._exceptions import (
     NovaConfigurationError,
     NovaError,
     NovaModelError,

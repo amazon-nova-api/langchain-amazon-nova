@@ -1,4 +1,4 @@
-"""Tool use example with ChatNova.
+"""Tool use example with ChatAmazonNova.
 
 Demonstrates function calling / tool use patterns.
 """
@@ -8,9 +8,9 @@ import json
 from datetime import datetime
 from typing import Literal
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_core.tools import tool
-from langchain_nova import ChatNova
 
 
 @tool
@@ -81,7 +81,7 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
-    llm = ChatNova(model=args.model, temperature=0)
+    llm = ChatAmazonNova(model=args.model, temperature=0)
 
     # Bind tools to the model
     tools = [get_current_weather, get_current_time, calculate]

@@ -1,4 +1,4 @@
-"""Multi-agent collaboration using LangGraph and ChatNova.
+"""Multi-agent collaboration using LangGraph and ChatAmazonNova.
 
 This example shows multiple specialized agents working together with a supervisor
 to handle complex tasks. The supervisor routes tasks to appropriate agents.
@@ -7,14 +7,14 @@ to handle complex tasks. The supervisor routes tasks to appropriate agents.
 import argparse
 from typing import Literal, TypedDict
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import StateGraph, START, END
-
-from langchain_nova import ChatNova
+from langgraph.graph import END, START, StateGraph
 
 
 class AgentState(TypedDict):
     """State passed between agents."""
+
     messages: list
     next_agent: str
     task: str
@@ -31,10 +31,7 @@ def create_writer_agent(llm):
     def writer(state: AgentState) -> dict:
         messages = [system_message] + state["messages"]
         response = llm.invoke(messages)
-        return {
-            "messages": state["messages"] + [response],
-            "next_agent": "supervisor"
-        }
+        return {"messages": state["messages"] + [response], "next_agent": "supervisor"}
 
     return writer
 
@@ -50,10 +47,7 @@ def create_translator_agent(llm):
     def translator(state: AgentState) -> dict:
         messages = [system_message] + state["messages"]
         response = llm.invoke(messages)
-        return {
-            "messages": state["messages"] + [response],
-            "next_agent": "supervisor"
-        }
+        return {"messages": state["messages"] + [response], "next_agent": "supervisor"}
 
     return translator
 
@@ -69,10 +63,7 @@ def create_critic_agent(llm):
     def critic(state: AgentState) -> dict:
         messages = [system_message] + state["messages"]
         response = llm.invoke(messages)
-        return {
-            "messages": state["messages"] + [response],
-            "next_agent": "supervisor"
-        }
+        return {"messages": state["messages"] + [response], "next_agent": "supervisor"}
 
     return critic
 
@@ -152,7 +143,7 @@ def create_multi_agent_graph(llm, verbose: bool = False):
             "translator": "translator",
             "critic": "critic",
             "finish": END,
-        }
+        },
     )
 
     # All agents return to supervisor
@@ -168,12 +159,14 @@ def main() -> None:
     parser.add_argument("--model", type=str, default="nova-pro-v1", help="Nova model to use")
     parser.add_argument("--query", type=str, help="Task to execute (non-interactive mode)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
-    parser.add_argument("--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort")
+    parser.add_argument(
+        "--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort"
+    )
     parser.add_argument("--top-p", type=float, help="Top-p sampling (0.0-1.0)")
     args = parser.parse_args()
 
     # Initialize model
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         reasoning_effort=args.reasoning,
@@ -192,11 +185,13 @@ def main() -> None:
     if args.query:
         # Non-interactive mode
         print(f"\nTask: {args.query}\n")
-        result = agent_system.invoke({
-            "messages": [HumanMessage(content=args.query)],
-            "next_agent": "supervisor",
-            "task": args.query
-        })
+        result = agent_system.invoke(
+            {
+                "messages": [HumanMessage(content=args.query)],
+                "next_agent": "supervisor",
+                "task": args.query,
+            }
+        )
 
         print("\n=== Final Output ===")
         print(result["messages"][-1].content)
@@ -222,11 +217,13 @@ def main() -> None:
                 break
 
             try:
-                result = agent_system.invoke({
-                    "messages": [HumanMessage(content=user_input)],
-                    "next_agent": "supervisor",
-                    "task": user_input
-                })
+                result = agent_system.invoke(
+                    {
+                        "messages": [HumanMessage(content=user_input)],
+                        "next_agent": "supervisor",
+                        "task": user_input,
+                    }
+                )
 
                 print("\n=== Result ===")
                 print(result["messages"][-1].content)

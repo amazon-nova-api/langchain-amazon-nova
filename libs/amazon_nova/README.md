@@ -19,10 +19,10 @@ uv add langchain-nova
 ## Quick Start
 
 ```python
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 # Initialize the model
-model = ChatNova(
+model = ChatAmazonNova(
     model="nova-pro-v1",
     temperature=0.7,
 )
@@ -70,9 +70,9 @@ Amazon Nova offers several model variants:
 ### Basic Chat
 
 ```python
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
-model = ChatNova(model="nova-pro-v1")
+model = ChatAmazonNova(model="nova-pro-v1")
 messages = [
     ("system", "You are a helpful assistant."),
     ("human", "Explain quantum computing in simple terms."),
@@ -119,7 +119,7 @@ asyncio.run(main())
 Check model capabilities programmatically:
 
 ```python
-from langchain_nova import get_model_capabilities
+from langchain_amazon_nova import get_model_capabilities
 
 caps = get_model_capabilities("nova-pro-v1")
 print(f"Supports vision: {caps.supports_vision}")

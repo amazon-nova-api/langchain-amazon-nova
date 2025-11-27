@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "langchain-nova"
+name = "langchain-amazon-nova"
 description = "An integration package connecting Amazon Nova and LangChain"
 license = {text = "MIT"}
 readme = "README.md"
@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Source Code" = "https://github.com/langchain-ai/langchain-nova/tree/main/libs/nova"
-repository = "https://github.com/langchain-ai/langchain-nova"
+"Source Code" = "https://github.com/langchain-ai/langchain-amazon-nova/tree/main/libs/nova"
+repository = "https://github.com/langchain-ai/langchain-amazon-nova"
 
 [project.optional-dependencies]
 # tools = ["python_version>='3.10'", "playwright>=1.53.0", "beautifulsoup4>=4.13.4"]
@@ -62,7 +62,7 @@ disallow_untyped_defs = "True"
 exclude = ["notebooks", "samples"]
 
 [tool.coverage.run]
-source = ["langchain_nova"]
+source = ["langchain_amazon_nova"]
 omit = [
     "tests/*",
     "*/tests/*",

@@ -1,12 +1,11 @@
-"""LCEL chains example with ChatNova."""
+"""LCEL chains example with ChatAmazonNova."""
 
 import argparse
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-
-from langchain_nova import ChatNova
 
 
 def main():
@@ -17,7 +16,7 @@ def main():
     parser.add_argument("--top-p", type=float, help="Top-p sampling (0.0-1.0)")
     args = parser.parse_args()
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         reasoning_effort=args.reasoning,
@@ -43,12 +42,8 @@ def main():
     print("=== 2. Sequential Chain ===\n")
 
     # Sequential processing with multiple steps
-    translate_prompt = ChatPromptTemplate.from_template(
-        "Translate this to {language}: {text}"
-    )
-    summarize_prompt = ChatPromptTemplate.from_template(
-        "Summarize in one sentence: {text}"
-    )
+    translate_prompt = ChatPromptTemplate.from_template("Translate this to {language}: {text}")
+    summarize_prompt = ChatPromptTemplate.from_template("Summarize in one sentence: {text}")
 
     translate_chain = translate_prompt | llm | StrOutputParser()
     summarize_chain = summarize_prompt | llm | StrOutputParser()
@@ -77,15 +72,11 @@ def main():
     from langchain_core.runnables import RunnableParallel
 
     joke_chain = (
-        ChatPromptTemplate.from_template("Tell a joke about {topic}")
-        | llm
-        | StrOutputParser()
+        ChatPromptTemplate.from_template("Tell a joke about {topic}") | llm | StrOutputParser()
     )
 
     poem_chain = (
-        ChatPromptTemplate.from_template("Write a haiku about {topic}")
-        | llm
-        | StrOutputParser()
+        ChatPromptTemplate.from_template("Write a haiku about {topic}") | llm | StrOutputParser()
     )
 
     parallel_chain = RunnableParallel(joke=joke_chain, poem=poem_chain)
@@ -100,13 +91,13 @@ def main():
     print("=== 4. Chain with Fallbacks ===\n")
 
     # Fallback to different model if first fails
-    primary = ChatNova(
+    primary = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         max_tokens=500,
         reasoning_effort=args.reasoning,
     )
-    fallback_model = ChatNova(model="nova-lite-v1", temperature=0.7, max_tokens=500)
+    fallback_model = ChatAmazonNova(model="nova-lite-v1", temperature=0.7, max_tokens=500)
 
     prompt = ChatPromptTemplate.from_template("What is {thing}?")
     chain_with_fallback = (prompt | primary | StrOutputParser()).with_fallbacks(

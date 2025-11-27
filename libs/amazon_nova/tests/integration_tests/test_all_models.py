@@ -3,7 +3,7 @@
 import pytest
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 
 def pytest_generate_tests(metafunc):  # type: ignore
@@ -18,7 +18,7 @@ def pytest_generate_tests(metafunc):  # type: ignore
 
 def test_invoke_all_models(model_id: str) -> None:
     """Test basic invoke works for each available model."""
-    llm = ChatNova(model=model_id, temperature=0)
+    llm = ChatAmazonNova(model=model_id, temperature=0)
 
     messages = [
         SystemMessage(content="You are a helpful assistant."),
@@ -32,7 +32,7 @@ def test_invoke_all_models(model_id: str) -> None:
 
 def test_streaming_all_models(model_id: str) -> None:
     """Test streaming works for each available model."""
-    llm = ChatNova(model=model_id, temperature=0)
+    llm = ChatAmazonNova(model=model_id, temperature=0)
 
     messages = [
         SystemMessage(content="You are a helpful assistant."),
@@ -54,7 +54,7 @@ def test_streaming_all_models(model_id: str) -> None:
 @pytest.mark.asyncio
 async def test_ainvoke_all_models(model_id: str) -> None:
     """Test async invoke works for each available model."""
-    llm = ChatNova(model=model_id, temperature=0)
+    llm = ChatAmazonNova(model=model_id, temperature=0)
 
     messages = [
         SystemMessage(content="You are a helpful assistant."),
@@ -69,7 +69,7 @@ async def test_ainvoke_all_models(model_id: str) -> None:
 @pytest.mark.asyncio
 async def test_astreaming_all_models(model_id: str) -> None:
     """Test async streaming works for each available model."""
-    llm = ChatNova(model=model_id, temperature=0)
+    llm = ChatAmazonNova(model=model_id, temperature=0)
 
     messages = [
         SystemMessage(content="You are a helpful assistant."),
@@ -90,7 +90,7 @@ async def test_astreaming_all_models(model_id: str) -> None:
 
 def test_model_metadata(single_test_model: str) -> None:
     """Test that models return proper metadata (uses single model for speed)."""
-    llm = ChatNova(model=single_test_model, temperature=0)
+    llm = ChatAmazonNova(model=single_test_model, temperature=0)
 
     messages = [HumanMessage(content="Hi")]
     response = llm.invoke(messages)

@@ -1,16 +1,15 @@
-"""Multi-turn conversation example with ChatNova."""
+"""Multi-turn conversation example with ChatAmazonNova."""
 
 import argparse
 import time
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-
-from langchain_nova import ChatNova
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Multi-turn conversation example with ChatNova"
+        description="Multi-turn conversation example with ChatAmazonNova"
     )
     parser.add_argument(
         "--model",
@@ -28,9 +27,9 @@ def main():
 
     # Initialize the model
     if args.verbose:
-        print(f"\n[DEBUG] Initializing ChatNova with model: {args.model}")
+        print(f"\n[DEBUG] Initializing ChatAmazonNova with model: {args.model}")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         max_tokens=2048,

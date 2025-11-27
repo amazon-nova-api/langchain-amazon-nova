@@ -1,14 +1,13 @@
-"""Basic RAG (Retrieval Augmented Generation) example with ChatNova."""
+"""Basic RAG (Retrieval Augmented Generation) example with ChatAmazonNova."""
 
 import argparse
 
 from langchain.text_splitter import CharacterTextSplitter
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-
-from langchain_nova import ChatNova
 
 
 def format_docs(docs):
@@ -22,7 +21,7 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
-    llm = ChatNova(model=args.model, temperature=0)
+    llm = ChatAmazonNova(model=args.model, temperature=0)
 
     if args.verbose:
         print(f"\n[DEBUG] Using model: {args.model}")
@@ -53,9 +52,7 @@ def main():
     if args.verbose:
         print(f"[DEBUG] Created {len(documents)} documents")
         for doc in documents:
-            print(
-                f"[DEBUG]   - {doc.metadata['source']}: {len(doc.page_content)} chars"
-            )
+            print(f"[DEBUG]   - {doc.metadata['source']}: {len(doc.page_content)} chars")
         print()
 
     print("=== 2. Simple Retrieval (Manual) ===\n")
@@ -177,9 +174,7 @@ Answer:"""
     # Answer based on combined context
     context = format_docs(unique_docs)
     answer = (
-        ChatPromptTemplate.from_template(
-            "Based on this context:\n{context}\n\nAnswer: {question}"
-        )
+        ChatPromptTemplate.from_template("Based on this context:\n{context}\n\nAnswer: {question}")
         | llm
         | StrOutputParser()
     ).invoke({"context": context, "question": original_query})

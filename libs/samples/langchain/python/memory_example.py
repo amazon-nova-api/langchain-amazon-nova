@@ -1,12 +1,11 @@
-"""Memory and conversation context examples with ChatNova."""
+"""Memory and conversation context examples with ChatAmazonNova."""
 
 import argparse
 
 from langchain.memory import ConversationBufferMemory, ConversationSummaryMemory
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
-from langchain_nova import ChatNova
 
 
 def main():
@@ -15,7 +14,7 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
-    llm = ChatNova(model=args.model, temperature=0.7)
+    llm = ChatAmazonNova(model=args.model, temperature=0.7)
 
     if args.verbose:
         print(f"\n[DEBUG] Using model: {args.model}")
@@ -49,12 +48,8 @@ def main():
     memory = ConversationBufferMemory(return_messages=True)
 
     # Save conversations
-    memory.save_context(
-        {"input": "Hi, I'm Alice"}, {"output": "Hello Alice! Nice to meet you."}
-    )
-    memory.save_context(
-        {"input": "I live in Seattle"}, {"output": "Seattle is a beautiful city!"}
-    )
+    memory.save_context({"input": "Hi, I'm Alice"}, {"output": "Hello Alice! Nice to meet you."})
+    memory.save_context({"input": "I live in Seattle"}, {"output": "Seattle is a beautiful city!"})
 
     if args.verbose:
         print(f"[DEBUG] Buffer memory has {len(memory.chat_memory.messages)} messages")

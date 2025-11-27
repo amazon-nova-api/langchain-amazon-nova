@@ -1,14 +1,13 @@
-"""Prompt template examples with ChatNova."""
+"""Prompt template examples with ChatAmazonNova."""
 
 import argparse
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.prompts import (
     ChatPromptTemplate,
     FewShotChatMessagePromptTemplate,
     MessagesPlaceholder,
 )
-
-from langchain_nova import ChatNova
 
 
 def main():
@@ -17,7 +16,7 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
-    llm = ChatNova(model=args.model, temperature=0.7)
+    llm = ChatAmazonNova(model=args.model, temperature=0.7)
 
     if args.verbose:
         print(f"\n[DEBUG] Using model: {args.model}")

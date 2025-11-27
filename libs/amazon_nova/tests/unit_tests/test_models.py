@@ -2,7 +2,7 @@
 
 import pytest
 
-from langchain_nova.models import (
+from langchain_amazon_nova.models import (
     MODEL_CAPABILITIES,
     ModelCapabilities,
     get_model_capabilities,

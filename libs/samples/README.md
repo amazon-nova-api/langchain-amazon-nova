@@ -1,4 +1,4 @@
-# ChatNova Samples
+# ChatAmazonNova Samples
 
 Examples demonstrating LangChain and LangGraph integration with Amazon Nova models.
 
@@ -60,7 +60,7 @@ python basic_chat.py
 
 ## LangChain Examples
 
-Foundational patterns for using LangChain with ChatNova:
+Foundational patterns for using LangChain with ChatAmazonNova:
 - Chains and LCEL composition
 - Prompt templates and few-shot learning
 - Output parsers for structured data

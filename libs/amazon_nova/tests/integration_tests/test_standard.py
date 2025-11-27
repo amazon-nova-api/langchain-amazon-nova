@@ -1,20 +1,20 @@
-"""Standard integration tests for ChatNova using langchain-tests."""
+"""Standard integration tests for ChatAmazonNova using langchain-tests."""
 
 from typing import Type
 
 from langchain_core.language_models import BaseChatModel
 from langchain_tests.integration_tests import ChatModelIntegrationTests
 
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 
-class TestChatNovaIntegration(ChatModelIntegrationTests):
-    """Standard integration tests for ChatNova."""
+class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
+    """Standard integration tests for ChatAmazonNova."""
 
     @property
     def chat_model_class(self) -> Type[BaseChatModel]:
         """Return the chat model class to test."""
-        return ChatNova
+        return ChatAmazonNova
 
     @property
     def chat_model_params(self) -> dict:

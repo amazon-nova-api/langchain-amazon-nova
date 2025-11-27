@@ -1,6 +1,6 @@
 """LangChain integration for Amazon Nova."""
 
-from langchain_nova._exceptions import (
+from langchain_amazon_nova._exceptions import (
     NovaConfigurationError,
     NovaError,
     NovaModelError,
@@ -9,8 +9,8 @@ from langchain_nova._exceptions import (
     NovaToolCallError,
     NovaValidationError,
 )
-from langchain_nova.chat_models import ChatNova
-from langchain_nova.models import (
+from langchain_amazon_nova.chat_models import ChatAmazonNova
+from langchain_amazon_nova.models import (
     ModelCapabilities,
     get_model_capabilities,
     is_image_generation_model,
@@ -18,7 +18,7 @@ from langchain_nova.models import (
 )
 
 __all__ = [
-    "ChatNova",
+    "ChatAmazonNova",
     "ModelCapabilities",
     "get_model_capabilities",
     "is_multimodal_model",

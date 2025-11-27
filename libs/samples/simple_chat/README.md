@@ -263,7 +263,7 @@ Example verbose output:
 ```bash
 $ python basic_chat.py -v
 
-[DEBUG] Initializing ChatNova with model: nova-pro-v1
+[DEBUG] Initializing ChatAmazonNova with model: nova-pro-v1
 [DEBUG] Model initialized successfully
 [DEBUG] Base URL: https://api.nova.amazon.com/v1
 [DEBUG] Temperature: 0.7
@@ -311,10 +311,10 @@ Shows:
 **Example Usage:**
 
 ```python
-from langchain_nova import ChatNova, NovaError, NovaModelNotFoundError
+from langchain_amazon_nova import ChatAmazonNova, NovaError, NovaModelNotFoundError
 
 try:
-    llm = ChatNova(model="invalid-model")
+    llm = ChatAmazonNova(model="invalid-model")
     llm.invoke("Hello!")
 except NovaModelNotFoundError as e:
     print(f"Model {e.model_name} not found (status: {e.status_code})")

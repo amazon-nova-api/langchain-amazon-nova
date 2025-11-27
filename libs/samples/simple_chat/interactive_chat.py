@@ -19,10 +19,9 @@ import sys
 import time
 from typing import List
 
+from langchain_amazon_nova import ChatAmazonNova
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-
-from langchain_nova import ChatNova
 
 
 def print_banner(verbose: bool = False) -> None:
@@ -82,7 +81,7 @@ def print_stats(messages: List[BaseMessage], total_time: float) -> None:
 
 
 def chat_streaming(
-    llm: ChatNova,
+    llm: ChatAmazonNova,
     messages: List[BaseMessage],
     user_input: str,
     verbose: bool = False,
@@ -118,7 +117,7 @@ def chat_streaming(
 
 
 def chat_non_streaming(
-    llm: ChatNova,
+    llm: ChatAmazonNova,
     messages: List[BaseMessage],
     user_input: str,
     verbose: bool = False,
@@ -193,7 +192,7 @@ def main() -> None:
 
     # Initialize the model
     try:
-        llm = ChatNova(
+        llm = ChatAmazonNova(
             model=args.model,
             temperature=args.temperature,
             max_tokens=args.max_tokens,

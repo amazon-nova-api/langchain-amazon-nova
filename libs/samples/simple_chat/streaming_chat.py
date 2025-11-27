@@ -1,13 +1,13 @@
-"""Streaming ChatNova example."""
+"""Streaming ChatAmazonNova example."""
 
 import argparse
 import time
 
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Streaming ChatNova example")
+    parser = argparse.ArgumentParser(description="Streaming ChatAmazonNova example")
     parser.add_argument(
         "--model",
         type=str,
@@ -35,9 +35,9 @@ def main():
 
     # Initialize the model
     if args.verbose:
-        print(f"\n[DEBUG] Initializing ChatNova with model: {args.model}")
+        print(f"\n[DEBUG] Initializing ChatAmazonNova with model: {args.model}")
 
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         max_tokens=2048,

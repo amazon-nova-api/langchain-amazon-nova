@@ -1,20 +1,20 @@
-"""Reflection pattern using LangGraph and ChatNova.
+"""Reflection pattern using LangGraph and ChatAmazonNova.
 
 This example demonstrates an agent that critiques and improves its own outputs
 through multiple iterations of generation and reflection.
 """
 
 import argparse
-from typing import TypedDict, List
+from typing import List, TypedDict
 
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-from langgraph.graph import StateGraph, START, END
-
-from langchain_nova import ChatNova
+from langchain_amazon_nova import ChatAmazonNova
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langgraph.graph import END, START, StateGraph
 
 
 class ReflectionState(TypedDict):
     """State for the reflection loop."""
+
     messages: List
     iterations: int
     max_iterations: int
@@ -81,9 +81,7 @@ def create_reflector(llm, verbose: bool = False):
             print(f"[Reflector] {'✓ Approved' if is_approved else '✗ Needs revision'}")
 
         return {
-            "messages": state["messages"] + [
-                HumanMessage(content=f"Critique: {response.content}")
-            ],
+            "messages": state["messages"] + [HumanMessage(content=f"Critique: {response.content}")],
         }
 
     return reflect
@@ -132,7 +130,7 @@ def create_reflection_graph(llm, max_iterations: int = 3, verbose: bool = False)
         {
             "reflect": "reflect",
             "end": END,
-        }
+        },
     )
 
     workflow.add_conditional_edges(
@@ -141,7 +139,7 @@ def create_reflection_graph(llm, max_iterations: int = 3, verbose: bool = False)
         {
             "generate": "generate",
             "end": END,
-        }
+        },
     )
 
     return workflow.compile()
@@ -151,14 +149,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Reflection agent with LangGraph")
     parser.add_argument("--model", type=str, default="nova-pro-v1", help="Nova model to use")
     parser.add_argument("--query", type=str, help="Query to process (non-interactive mode)")
-    parser.add_argument("--max-iterations", type=int, default=3, help="Maximum reflection iterations")
+    parser.add_argument(
+        "--max-iterations", type=int, default=3, help="Maximum reflection iterations"
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
-    parser.add_argument("--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort")
+    parser.add_argument(
+        "--reasoning", type=str, choices=["low", "medium", "high"], help="Reasoning effort"
+    )
     parser.add_argument("--top-p", type=float, help="Top-p sampling (0.0-1.0)")
     args = parser.parse_args()
 
     # Initialize model
-    llm = ChatNova(
+    llm = ChatAmazonNova(
         model=args.model,
         temperature=0.7,
         reasoning_effort=args.reasoning,
@@ -178,12 +180,14 @@ def main() -> None:
         # Non-interactive mode
         print(f"\nQuery: {args.query}\n")
 
-        result = agent.invoke({
-            "messages": [HumanMessage(content=args.query)],
-            "iterations": 0,
-            "max_iterations": args.max_iterations,
-            "initial_query": args.query,
-        })
+        result = agent.invoke(
+            {
+                "messages": [HumanMessage(content=args.query)],
+                "iterations": 0,
+                "max_iterations": args.max_iterations,
+                "initial_query": args.query,
+            }
+        )
 
         # Find the last AI message (final output)
         final_output = None
@@ -217,12 +221,14 @@ def main() -> None:
                 break
 
             try:
-                result = agent.invoke({
-                    "messages": [HumanMessage(content=user_input)],
-                    "iterations": 0,
-                    "max_iterations": args.max_iterations,
-                    "initial_query": user_input,
-                })
+                result = agent.invoke(
+                    {
+                        "messages": [HumanMessage(content=user_input)],
+                        "iterations": 0,
+                        "max_iterations": args.max_iterations,
+                        "initial_query": user_input,
+                    }
+                )
 
                 # Find the last AI message (final output)
                 final_output = None
