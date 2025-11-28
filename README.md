@@ -1,60 +1,60 @@
 # 🦜️🔗 LangChain 🤝 Amazon Nova
 
-This repository contains 1 package with Nova integrations with LangChain:
+This repository contains the official LangChain integration package for Amazon Nova models:
 
-- [langchain-nova](https://pypi.org/project/langchain-nova/)
+- [langchain-amazon-nova](https://pypi.org/project/langchain-amazon-nova/)
 
-## Initial Repo Checklist (Remove this section after completing)
+Amazon Nova is a family of state-of-the-art foundation models from AWS that includes text, multimodal, and image generation capabilities. This integration provides seamless access to Nova models through LangChain's standardized chat model interface.
 
-Welcome to the LangChain Partner Integration Repository! This checklist will help you get started with your new repository.
+## Quick Start
 
-After creating your repo from the integration-repo-template, we'll go through how to
-set up your new repository in Github.
+```bash
+pip install -U langchain-amazon-nova
+```
 
-This setup assumes that the partner package is already split. For those instructions,
-see [these docs](https://docs.langchain.com/oss/python/contributing/integrations-langchain).
+```python
+from langchain_amazon_nova import ChatAmazonNova
 
-> [!NOTE]
-> Integration packages can be managed in your own Github organization.
+model = ChatAmazonNova(model="nova-pro-v1", temperature=0.7)
+response = model.invoke("What is the capital of France?")
+print(response.content)
+```
 
-Code (auto ecli)
+See [libs/amazon_nova/README.md](libs/amazon_nova/README.md) for full documentation.
 
-- [ ] Fill out the readme above (for folks that follow pypi link)
+## Repository Setup TODO
 
-Workflow code (auto ecli)
+### Workflow Configuration
+- [ ] Populate `.github/workflows/_release.yml` with `on.workflow_dispatch.inputs.working-directory.default`
+- [ ] Add secrets as env vars in `.github/workflows/_release.yml`
+- [ ] Update `.github/workflows/api_doc_build.yml` with new code location
 
-- [ ] Populate .github/workflows/_release.yml with `on.workflow_dispatch.inputs.working-directory.default`
-
-Workflow code (manual)
-
-- [ ] Add secrets as env vars in .github/workflows/_release.yml
-
-Monorepo workflow code (manual)
-
-- [ ] Pull in new code location, remove old in .github/workflows/api_doc_build.yml
-
-In github (manual)
-
-- [ ] Add any required integration testing secrets in Github
-- [ ] Add any required partner collaborators in Github
-- [ ] "Allow auto-merge" in General Settings (recommended)
-- [ ] Only "Allow squash merging" in General Settings (recommended)
-- [ ] Set up ruleset matching CI build (recommended)
+### GitHub Settings
+- [ ] Add integration testing secrets in GitHub
+- [ ] Add partner collaborators in GitHub
+- [ ] Enable "Allow auto-merge" in General Settings
+- [ ] Set to only "Allow squash merging" in General Settings
+- [ ] Set up CI build ruleset:
     - name: ci build
     - enforcement: active
     - bypass: write
     - target: default branch
     - rules: restrict deletions, require status checks ("CI Success"), block force pushes
-- [ ] Set up ruleset (recommended)
+- [ ] Set up PR requirements ruleset:
     - name: require prs
     - enforcement: active
     - bypass: none
     - target: default branch
     - rules: restrict deletions, require a pull request before merging (0 approvals, no boxes), block force pushes
 
-Pypi (manual)
-
-- [ ] Add new repo to test-pypi and pypi trusted publishing
+### PyPI Publishing
+- [ ] Add repo to test-pypi and pypi trusted publishing
 
 > [!NOTE]
 > Tag [@ccurme](https://github.com/ccurme) if you have questions on any step.
+
+## Contributing
+
+As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
+
+For detailed information on how to contribute, see the [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview).
