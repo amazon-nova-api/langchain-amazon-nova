@@ -4,7 +4,7 @@ This repository contains the official LangChain integration package for Amazon N
 
 - [langchain-amazon-nova](https://pypi.org/project/langchain-amazon-nova/)
 
-Amazon Nova is a family of state-of-the-art foundation models from AWS that includes text, multimodal, and image generation capabilities. This integration provides seamless access to Nova models through LangChain's standardized chat model interface.
+Amazon Nova is a family of state-of-the-art foundation models from Amazon that includes text, multimodal, and image generation capabilities. This integration provides seamless access to Nova models through LangChain's standardized chat model interface.
 
 ## Quick Start
 
