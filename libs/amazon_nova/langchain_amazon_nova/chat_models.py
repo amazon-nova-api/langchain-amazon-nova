@@ -321,7 +321,7 @@ class ChatAmazonNova(BaseChatModel):
             "metadata": self.metadata,
             "stream_options": self.stream_options,
             "extra_headers": {
-                "system_tools": self.system_tools,
+                "system_tools": json.dumps(self.system_tools) if self.system_tools else None,
             },
         }
 

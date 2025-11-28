@@ -39,13 +39,13 @@ test_watch: ## Run and interactively watch unit tests
 	uv run --group test ptw --snapshot-update --now . -- -vv $(TEST_FILE)
 
 coverage_integration_tests: ## Run integration tests with coverage
-	uv run --group test --group test_integration pytest --cov=langchain_nova --cov-report=html --cov-report=term-missing --cov-branch tests/integration_tests/
+	uv run --group test --group test_integration pytest --cov=langchain_amazon_nova --cov-report=html --cov-report=term-missing --cov-branch tests/integration_tests/
 
 coverage_integration_test: ## Run specific integration test with coverage: make coverage_integration_test TEST_FILE=tests/integration_tests/integ_test.py
-	uv run --group test --group test_integration pytest --cov=langchain_nova --cov-report=html --cov-report=term-missing --cov-branch $(TEST_FILE)
+	uv run --group test --group test_integration pytest --cov=langchain_amazon_nova --cov-report=html --cov-report=term-missing --cov-branch $(TEST_FILE)
 
 coverage_tests: ## Run unit tests with coverage
-	env -u NOVA_API_KEY -u NOVA_BASE_URL uv run --group test pytest --cov=langchain_nova --cov-report=html --cov-report=term-missing --cov-branch tests/unit_tests/
+	env -u NOVA_API_KEY -u NOVA_BASE_URL uv run --group test pytest --cov=langchain_amazon_nova --cov-report=html --cov-report=term-missing --cov-branch tests/unit_tests/
 
 coverage_report: ## Generate coverage report
 	uv run --group test coverage report
@@ -62,7 +62,7 @@ PYTHON_FILES=.
 MYPY_CACHE=.mypy_cache
 lint format: PYTHON_FILES=.
 lint_diff format_diff: PYTHON_FILES=$(shell git diff --relative=libs/aws --name-only --diff-filter=d main | grep -E '\.py$$|\.ipynb$$')
-lint_package: PYTHON_FILES=langchain_nova
+lint_package: PYTHON_FILES=langchain_amazon_nova
 lint_tests: PYTHON_FILES=tests
 lint_tests: MYPY_CACHE=.mypy_cache_test
 
@@ -79,7 +79,7 @@ format format_diff: ## Run code formatter
 # DEPENDENCIES
 ######################
 
-check_imports: $(shell find langchain_nova -name '*.py') ## Check missing imports
+check_imports: $(shell find langchain_amazon_nova -name '*.py') ## Check missing imports
 	uv run --all-groups python ./scripts/check_imports.py $^
 
 ######################

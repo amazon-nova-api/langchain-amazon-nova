@@ -16,7 +16,12 @@ from datetime import datetime
 from typing import Literal
 
 from langchain_amazon_nova import ChatAmazonNova
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import (
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_core.tools import tool
 
 
@@ -124,7 +129,7 @@ def main():
     tool_map = {t.name: t for t in tools}
 
     # Initialize conversation
-    messages = [
+    messages: list[BaseMessage] = [
         SystemMessage(
             content="You are a helpful assistant with access to tools for weather, time, and calculations. Use the tools when needed to answer user questions accurately."
         )
