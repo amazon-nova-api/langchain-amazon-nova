@@ -320,10 +320,13 @@ class ChatAmazonNova(BaseChatModel):
             "reasoning_effort": self.reasoning_effort,
             "metadata": self.metadata,
             "stream_options": self.stream_options,
-            "extra_headers": {
-                "system_tools": json.dumps(self.system_tools) if self.system_tools else None,
-            },
         }
+
+        # Only add extra_headers if system_tools is not empty
+        if self.system_tools:
+            exclude_if_none["extra_headers"] = {
+                "system_tools": json.dumps(self.system_tools),
+            }
 
         return {
             "model": self.model_name,
