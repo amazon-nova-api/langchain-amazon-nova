@@ -3,7 +3,6 @@ import sys
 from typing import Dict
 
 LIB_DIRS = ["libs/amazon_nova"]
-IGNORE_LIBS = ["libs/samples"]
 
 if __name__ == "__main__":
     files = sys.argv[1:]
@@ -31,8 +30,6 @@ if __name__ == "__main__":
             dirs_to_run["test"].update(LIB_DIRS)
 
         if any(file.startswith(dir_) for dir_ in LIB_DIRS):
-            if (file.startswith(dir_) for dir_ in IGNORE_LIBS):
-                continue
             for dir_ in LIB_DIRS:
                 if file.startswith(dir_):
                     dirs_to_run["test"].add(dir_)
