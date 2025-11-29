@@ -31,21 +31,6 @@ class TestChatAmazonNovaUnit(ChatModelUnitTests):
             "api_key": "test-api-key",
         }
 
-    @pytest.mark.xfail(reason="Not yet implemented")
-    def test_bind_tools(self) -> None:
-        """Tool binding not yet implemented."""
-        pass
-
-    @pytest.mark.xfail(reason="Not yet implemented")
-    def test_tool_calling(self) -> None:
-        """Tool calling not yet implemented."""
-        pass
-
-    @pytest.mark.xfail(reason="Not yet implemented")
-    def test_structured_output(self) -> None:
-        """Structured output not yet implemented."""
-        pass
-
     @pytest.mark.xfail(reason="with_structured_output not yet implemented")
     def test_with_structured_output(self) -> None:
         """Structured output test not yet implemented."""

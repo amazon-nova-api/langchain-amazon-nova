@@ -559,15 +559,6 @@ class ChatAmazonNova(BaseChatModel):
                 for tc in choice.message.tool_calls
             ]
 
-        # Handle function calls (legacy format)
-        if hasattr(choice.message, "function_call") and choice.message.function_call:
-            message_data["additional_kwargs"] = {
-                "function_call": {
-                    "name": choice.message.function_call.name,
-                    "arguments": choice.message.function_call.arguments,
-                }
-            }
-
         message = AIMessage(**message_data)
 
         # Add usage metadata if available
@@ -648,15 +639,6 @@ class ChatAmazonNova(BaseChatModel):
                 }
                 for tc in choice.message.tool_calls
             ]
-
-        # Handle function calls (legacy format)
-        if hasattr(choice.message, "function_call") and choice.message.function_call:
-            message_data["additional_kwargs"] = {
-                "function_call": {
-                    "name": choice.message.function_call.name,
-                    "arguments": choice.message.function_call.arguments,
-                }
-            }
 
         message = AIMessage(**message_data)
 
