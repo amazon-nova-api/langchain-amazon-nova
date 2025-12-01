@@ -11,7 +11,7 @@ This is a monorepo containing LangChain and LangGraph integrations for Amazon No
 
 ## Development Commands
 
-### For langchain-aws (libs/nova/)
+### For langchain-amazon-nova (libs/nova/)
 
 **Setup:**
 
