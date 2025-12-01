@@ -442,6 +442,24 @@ class ChatAmazonNova(BaseChatModel):
                                             "image_url": {"url": str(image_url)},
                                         }
                                     )
+                            elif block_type == "audio" or block_type == "input_audio":
+                                # Handle audio input
+                                audio_data = block.get("data") or block.get(
+                                    "input_audio", {}
+                                ).get("data")
+                                audio_format = block.get("format", "wav")
+
+                                if audio_data:
+                                    content_blocks.append(
+                                        {
+                                            "type": "input_audio",
+                                            "input_audio": {
+                                                "data": audio_data,
+                                                "format": audio_format,
+                                            },
+                                        }
+                                    )
+                                continue
                         elif hasattr(block, "block_type"):
                             continue
                         elif isinstance(block, str):
