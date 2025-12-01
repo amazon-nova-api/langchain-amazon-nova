@@ -8,6 +8,9 @@ dependencies = [
     "langchain-amazon-nova @ git+https://github.com/amazon-nova-api/langchain-amazon-nova.git#subdirectory=libs/amazon_nova",
     "langchain-core>=1.0.2",
     "pandas>=2.0.0",
+    "sounddevice",
+    "soundfile",
+    "numpy"
 ]
 
 [project.optional-dependencies]
