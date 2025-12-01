@@ -31,7 +31,7 @@ Each directory has its own `pyproject.toml` for managing virtual environments:
 ```bash
 # Example: LangGraph Python samples
 git clone https://github.com/nova-ai-api/langchain-nova.git
-cd langchain-nova/libs/samples/simple_chat
+cd samples/simple_chat
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
