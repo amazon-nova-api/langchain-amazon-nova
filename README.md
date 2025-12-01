@@ -25,33 +25,13 @@ See [libs/amazon_nova/README.md](libs/amazon_nova/README.md) for full documentat
 ## Repository Setup TODO
 
 ### Workflow Configuration
-- [ ] Populate `.github/workflows/_release.yml` with `on.workflow_dispatch.inputs.working-directory.default`
 - [ ] Add secrets as env vars in `.github/workflows/_release.yml`
-- [ ] Update `.github/workflows/api_doc_build.yml` with new code location
 
 ### GitHub Settings
 - [ ] Add integration testing secrets in GitHub
-- [ ] Add partner collaborators in GitHub
-- [ ] Enable "Allow auto-merge" in General Settings
-- [ ] Set to only "Allow squash merging" in General Settings
-- [ ] Set up CI build ruleset:
-    - name: ci build
-    - enforcement: active
-    - bypass: write
-    - target: default branch
-    - rules: restrict deletions, require status checks ("CI Success"), block force pushes
-- [ ] Set up PR requirements ruleset:
-    - name: require prs
-    - enforcement: active
-    - bypass: none
-    - target: default branch
-    - rules: restrict deletions, require a pull request before merging (0 approvals, no boxes), block force pushes
 
 ### PyPI Publishing
 - [ ] Add repo to test-pypi and pypi trusted publishing
-
-> [!NOTE]
-> Tag [@ccurme](https://github.com/ccurme) if you have questions on any step.
 
 ## Contributing
 
