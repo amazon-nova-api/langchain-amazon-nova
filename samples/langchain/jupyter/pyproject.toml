@@ -7,7 +7,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "langchain-amazon-nova @ git+https://github.com/amazon-nova-api/langchain-amazon-nova.git#subdirectory=libs/amazon_nova",
+    "langchain-amazon-nova",
     "langchain-core>=0.3.0",
     "langchain-text-splitters>=0.3.0",
     "jupyter>=1.0.0",
