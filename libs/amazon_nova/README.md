@@ -53,8 +53,6 @@ Amazon Nova offers several model variants:
 - **nova-lite-v1**: Lightweight multimodal model (300K context)
 - **nova-pro-v1**: Balanced multimodal model (300K context)
 - **nova-premier-v1**: Most capable multimodal model (300K context)
-- **nova-canvas-v1**: Image generation model
-- **nova-deep-research-v1**: Research-focused text model (300K context)
 
 ## Features
 
@@ -63,7 +61,6 @@ Amazon Nova offers several model variants:
 - **Async Support**: Native async/await support
 - **Tool Calling**: Function calling capabilities (most models)
 - **Multimodal Input**: Image and video understanding (lite, pro, premier)
-- **Image Generation**: Create images from text (canvas)
 
 ## Example Usage
 
@@ -112,19 +109,6 @@ async def main():
     print(response.content)
 
 asyncio.run(main())
-```
-
-## Model Capabilities
-
-Check model capabilities programmatically:
-
-```python
-from langchain_amazon_nova import get_model_capabilities
-
-caps = get_model_capabilities("nova-pro-v1")
-print(f"Supports vision: {caps.supports_vision}")
-print(f"Supports tools: {caps.supports_tool_calling}")
-print(f"Context window: {caps.max_context_tokens}")
 ```
 
 ## 📖 Documentation
