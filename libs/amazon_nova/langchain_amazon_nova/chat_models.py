@@ -11,7 +11,6 @@ from typing import (
     List,
     Literal,
     Optional,
-    Self,
     Type,
     Union,
     cast,
@@ -40,6 +39,7 @@ from pydantic import (
     SecretStr,
     model_validator,
 )
+from typing_extensions import Self
 
 from langchain_amazon_nova._exceptions import map_http_error_to_nova_exception
 from langchain_amazon_nova.data._profiles import _PROFILES
