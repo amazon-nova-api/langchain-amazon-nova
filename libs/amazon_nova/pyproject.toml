@@ -37,11 +37,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Source Code" = "https://github.com/langchain-ai/langchain-amazon-nova/tree/main/libs/nova"
-repository = "https://github.com/langchain-ai/langchain-amazon-nova"
-
-[project.optional-dependencies]
-# tools = ["python_version>='3.10'", "playwright>=1.53.0", "beautifulsoup4>=4.13.4"]
+"Source Code" = "https://github.com/amazon-nova-api/langchain-amazon-nova/tree/main/libs/amazon_nova"
+repository = "https://github.com/amazon-nova-api/langchain-amazon-nova"
 
 [dependency-groups]
 test = [
