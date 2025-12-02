@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from collections.abc import Sequence
 from typing import (
     Any,
@@ -11,8 +12,10 @@ from typing import (
     List,
     Literal,
     Optional,
+    Self,
     Type,
     Union,
+    cast,
 )
 
 import httpx
@@ -22,6 +25,10 @@ from langchain_core.callbacks import (
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.language_models.profile import ModelProfile, ModelProfileRegistry
+from langchain_core.language_models.profile._loader_utils import (
+    load_profiles_from_data_dir,
+)
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.utils import (
@@ -36,11 +43,14 @@ from pydantic import (
 )
 
 from langchain_amazon_nova._exceptions import map_http_error_to_nova_exception
-from langchain_amazon_nova.models import (
-    ModelCapabilities,
-    get_model_capabilities,
-    validate_tool_calling,
-)
+from langchain_amazon_nova.data._profiles import _PROFILES
+
+_MODEL_PROFILES = cast("ModelProfileRegistry", _PROFILES)
+
+
+def _get_default_model_profile(model_name: str) -> ModelProfile:
+    default = _MODEL_PROFILES.get(model_name) or {}
+    return default.copy()
 
 
 def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
@@ -286,11 +296,12 @@ class ChatAmazonNova(BaseChatModel):
 
         return self
 
-    @property
-    def capabilities(self) -> ModelCapabilities:
-        """Get capabilities for the current model."""
-
-        return get_model_capabilities(self.model_name)
+    @model_validator(mode="after")
+    def _set_model_profile(self) -> Self:
+        """Set model profile if not overridden."""
+        if self.profile is None:
+            self.profile = _get_default_model_profile(self.model_name)
+        return self
 
     @property
     def _llm_type(self) -> str:
