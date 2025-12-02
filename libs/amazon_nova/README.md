@@ -2,7 +2,7 @@
 
 Official LangChain integration for Amazon Nova models.
 
-Amazon Nova is a family of state-of-the-art foundation models from AWS that includes text, multimodal, and image generation capabilities. This integration provides seamless access to Nova models through LangChain's standardized chat model interface.
+Amazon Nova is a family of state-of-the-art foundation models from Amazon that includes text, multimodal, and image generation capabilities. This integration provides access to Nova models through LangChain's standardized chat model interface.
 
 ## Installation
 
