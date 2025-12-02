@@ -7,7 +7,10 @@ name = "langchain-amazon-nova"
 description = "An integration package connecting Amazon Nova and LangChain"
 license = {text = "MIT"}
 readme = "README.md"
-authors = []
+authors = [
+    "nova-api-support@amazon.com",
+    "vshardul@amazon.com"
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
