@@ -101,5 +101,7 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
         super().test_tool_calling_with_no_arguments(*args, **kwargs)
 
     @pytest.mark.xfail(reason="Tools with no arguments not supported")
-    async def test_tool_calling_with_no_arguments_async(self, *args: Any, **kwargs: Any) -> None:
-        await super().test_tool_calling_with_no_arguments_async(*args, **kwargs)
+    async def test_tool_calling_with_no_arguments_async(
+        self, *args: Any, **kwargs: Any
+    ) -> None:
+        super().test_tool_calling_with_no_arguments_async(*args, **kwargs)
