@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from collections.abc import Sequence
 from typing import (
     Any,
@@ -26,9 +25,6 @@ from langchain_core.callbacks import (
 )
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.language_models.profile import ModelProfile, ModelProfileRegistry
-from langchain_core.language_models.profile._loader_utils import (
-    load_profiles_from_data_dir,
-)
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.utils import (
@@ -370,9 +366,6 @@ class ChatAmazonNova(BaseChatModel):
         Raises:
             ValueError: If strict=True and the model doesn't support tool calling.
         """  # noqa: E501
-
-        if strict:
-            validate_tool_calling(self.model_name)
 
         formatted_tools = [convert_to_nova_tool(tool) for tool in tools]
         return self.bind(tools=formatted_tools, **kwargs)
