@@ -37,18 +37,6 @@ _PROFILES: dict[str, dict[str, Any]] = {
         "reasoning_output": True,
         "tool_calling": True,
     },
-    "anthropic.claude-opus-4-1-20250805-v1:0": {
-        "max_input_tokens": 200000,
-        "max_output_tokens": 32000,
-        "image_inputs": True,
-        "audio_inputs": False,
-        "video_inputs": False,
-        "image_outputs": False,
-        "audio_outputs": False,
-        "video_outputs": False,
-        "reasoning_output": True,
-        "tool_calling": True,
-    },
     "nova-lite-v1": {
         "max_input_tokens": 300000,
         "max_output_tokens": 8192,

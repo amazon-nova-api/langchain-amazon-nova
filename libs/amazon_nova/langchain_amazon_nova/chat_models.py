@@ -23,8 +23,11 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
+from langchain_core.language_models import (
+    ModelProfile,
+    ModelProfileRegistry,
+)
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.profile import ModelProfile, ModelProfileRegistry
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.utils import (
@@ -349,7 +352,6 @@ class ChatAmazonNova(BaseChatModel):
     def bind_tools(
         self,
         tools: Sequence[Union[Dict[str, Any], Type[Any], Any]],
-        strict: bool = True,
         **kwargs: Any,
     ) -> Any:
         """Bind tools to the model.
@@ -564,6 +566,7 @@ class ChatAmazonNova(BaseChatModel):
             "content": choice.message.content or "",
             "response_metadata": {
                 "model": response.model,
+                "model_name": response.model,
                 "finish_reason": choice.finish_reason,
             },
         }
@@ -645,6 +648,7 @@ class ChatAmazonNova(BaseChatModel):
             "content": choice.message.content or "",
             "response_metadata": {
                 "model": response.model,
+                "model_name": response.model,
                 "finish_reason": choice.finish_reason,
             },
         }
@@ -722,20 +726,36 @@ class ChatAmazonNova(BaseChatModel):
             raise nova_exception from e
 
         for chunk in stream:
-            if not chunk.choices:
-                continue
+            # Get content from delta if choices exist
+            choice = chunk.choices[0] if chunk.choices else None
+            content = choice.delta.content if choice else ""
+            content = content or ""
 
-            choice = chunk.choices[0]
-            if choice.delta.content:
-                message_chunk = AIMessageChunk(content=choice.delta.content)
+            # Build message chunk with usage metadata if available
+            chunk_kwargs: dict[str, Any] = {"content": content}
 
+            if hasattr(chunk, "usage") and chunk.usage:
+                chunk_kwargs["usage_metadata"] = {
+                    "input_tokens": chunk.usage.prompt_tokens,
+                    "output_tokens": chunk.usage.completion_tokens,
+                    "total_tokens": chunk.usage.total_tokens,
+                }
+
+            message_chunk = AIMessageChunk(
+                content=content,
+                usage_metadata=chunk_kwargs.get("usage_metadata"),
+                response_metadata={"model_name": self.model_name},
+            )
+
+            if content:
                 if run_manager:
                     run_manager.on_llm_new_token(
-                        choice.delta.content,
+                        content,
                         chunk=ChatGenerationChunk(message=message_chunk),
                     )
 
-                yield ChatGenerationChunk(message=message_chunk)
+            # Always yield, even if no content (e.g., for usage metadata)
+            yield ChatGenerationChunk(message=message_chunk)
 
     async def _astream(
         self,
@@ -784,20 +804,36 @@ class ChatAmazonNova(BaseChatModel):
             raise nova_exception from e
 
         async for chunk in stream:
-            if not chunk.choices:
-                continue
+            # Get content from delta if choices exist
+            choice = chunk.choices[0] if chunk.choices else None
+            content = choice.delta.content if choice else ""
+            content = content or ""
 
-            choice = chunk.choices[0]
-            if choice.delta.content:
-                message_chunk = AIMessageChunk(content=choice.delta.content)
+            # Build message chunk with usage metadata if available
+            chunk_kwargs: dict[str, Any] = {"content": content}
 
+            if hasattr(chunk, "usage") and chunk.usage:
+                chunk_kwargs["usage_metadata"] = {
+                    "input_tokens": chunk.usage.prompt_tokens,
+                    "output_tokens": chunk.usage.completion_tokens,
+                    "total_tokens": chunk.usage.total_tokens,
+                }
+
+            message_chunk = AIMessageChunk(
+                content=content,
+                usage_metadata=chunk_kwargs.get("usage_metadata"),
+                response_metadata={"model_name": self.model_name},
+            )
+
+            if content:
                 if run_manager:
                     await run_manager.on_llm_new_token(
-                        choice.delta.content,
+                        content,
                         chunk=ChatGenerationChunk(message=message_chunk),
                     )
 
-                yield ChatGenerationChunk(message=message_chunk)
+            # Always yield, even if no content (e.g., for usage metadata)
+            yield ChatGenerationChunk(message=message_chunk)
 
 
 __all__ = ["ChatAmazonNova"]

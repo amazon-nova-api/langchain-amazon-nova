@@ -90,11 +90,11 @@ def test_streaming_response_structure() -> None:
 
     assert len(chunks) > 0
 
-    # Each chunk should be a ChatGenerationChunk
+    # Each chunk should be an AIMessageChunk (stream() unwraps ChatGenerationChunk)
     for chunk in chunks:
-        assert hasattr(chunk, "message")
-        # Content can be empty for some chunks
-        assert hasattr(chunk.message, "content")
+        assert isinstance(chunk, AIMessage)
+        # Content can be empty for some chunks (e.g., final chunk with usage)
+        assert hasattr(chunk, "content")
 
 
 @pytest.mark.integration
@@ -111,10 +111,18 @@ def test_streaming_with_usage_metadata() -> None:
 
     assert len(chunks) > 0
 
-    # Note: Usage metadata in streaming might be in final chunk
-    # OpenAI SDK handles this, verify we get chunks
+    # Find the chunk with usage metadata (should be in final chunk)
+    usage_found = False
     for chunk in chunks:
-        assert hasattr(chunk, "message")
+        if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+            usage_found = True
+            # Verify structure
+            assert "input_tokens" in chunk.usage_metadata
+            assert "output_tokens" in chunk.usage_metadata
+            assert "total_tokens" in chunk.usage_metadata
+            break
+
+    assert usage_found, "Usage metadata not found in any chunk"
 
 
 @pytest.mark.integration
@@ -197,7 +205,7 @@ def test_reasoning_effort_parameter() -> None:
     """Verify reasoning_effort parameter is accepted."""
     for effort_str in ["low", "medium", "high"]:
         llm = ChatAmazonNova(
-            model="nova-pro-v1",
+            model="nova-2-lite-v1",
             reasoning_effort=cast(Literal["low", "medium", "high"], effort_str),
             temperature=0.3,
         )
@@ -314,7 +322,7 @@ def test_all_exceptions_inherit_from_nova_error() -> None:
 def test_per_call_parameter_override() -> None:
     """Verify per-call parameters override model-level defaults."""
     llm = ChatAmazonNova(
-        model="nova-pro-v1", max_tokens=50, temperature=0.5, reasoning_effort="low"
+        model="nova-2-lite-v1", max_tokens=50, temperature=0.5, reasoning_effort="low"
     )
 
     # Override on invoke
