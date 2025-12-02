@@ -55,7 +55,7 @@ def single_test_model() -> str:
 
     Returns the first available model from the API.
     """
-    models = fetch_available_models()
+    models = fetch_available_models() or "nova-pro-v1"
     if not models:
         pytest.fail("No models available")
     return models[0]

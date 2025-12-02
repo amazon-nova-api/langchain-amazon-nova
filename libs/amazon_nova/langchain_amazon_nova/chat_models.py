@@ -13,6 +13,7 @@ from typing import (
     Optional,
     Type,
     Union,
+    cast,
 )
 
 import httpx
@@ -20,6 +21,10 @@ import openai
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
+)
+from langchain_core.language_models import (
+    ModelProfile,
+    ModelProfileRegistry,
 )
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, ToolMessage
@@ -34,13 +39,17 @@ from pydantic import (
     SecretStr,
     model_validator,
 )
+from typing_extensions import Self
 
 from langchain_amazon_nova._exceptions import map_http_error_to_nova_exception
-from langchain_amazon_nova.models import (
-    ModelCapabilities,
-    get_model_capabilities,
-    validate_tool_calling,
-)
+from langchain_amazon_nova.data._profiles import _PROFILES
+
+_MODEL_PROFILES = cast("ModelProfileRegistry", _PROFILES)
+
+
+def _get_default_model_profile(model_name: str) -> ModelProfile:
+    default = _MODEL_PROFILES.get(model_name) or {}
+    return default.copy()
 
 
 def convert_to_nova_tool(tool: Any) -> Dict[str, Any]:
@@ -286,11 +295,12 @@ class ChatAmazonNova(BaseChatModel):
 
         return self
 
-    @property
-    def capabilities(self) -> ModelCapabilities:
-        """Get capabilities for the current model."""
-
-        return get_model_capabilities(self.model_name)
+    @model_validator(mode="after")
+    def _set_model_profile(self) -> Self:
+        """Set model profile if not overridden."""
+        if self.profile is None:
+            self.profile = _get_default_model_profile(self.model_name)
+        return self
 
     @property
     def _llm_type(self) -> str:
@@ -342,7 +352,6 @@ class ChatAmazonNova(BaseChatModel):
     def bind_tools(
         self,
         tools: Sequence[Union[Dict[str, Any], Type[Any], Any]],
-        strict: bool = True,
         **kwargs: Any,
     ) -> Any:
         """Bind tools to the model.
@@ -359,9 +368,6 @@ class ChatAmazonNova(BaseChatModel):
         Raises:
             ValueError: If strict=True and the model doesn't support tool calling.
         """  # noqa: E501
-
-        if strict:
-            validate_tool_calling(self.model_name)
 
         formatted_tools = [convert_to_nova_tool(tool) for tool in tools]
         return self.bind(tools=formatted_tools, **kwargs)
@@ -560,6 +566,7 @@ class ChatAmazonNova(BaseChatModel):
             "content": choice.message.content or "",
             "response_metadata": {
                 "model": response.model,
+                "model_name": response.model,
                 "finish_reason": choice.finish_reason,
             },
         }
@@ -641,6 +648,7 @@ class ChatAmazonNova(BaseChatModel):
             "content": choice.message.content or "",
             "response_metadata": {
                 "model": response.model,
+                "model_name": response.model,
                 "finish_reason": choice.finish_reason,
             },
         }
@@ -718,20 +726,36 @@ class ChatAmazonNova(BaseChatModel):
             raise nova_exception from e
 
         for chunk in stream:
-            if not chunk.choices:
-                continue
+            # Get content from delta if choices exist
+            choice = chunk.choices[0] if chunk.choices else None
+            content = choice.delta.content if choice else ""
+            content = content or ""
 
-            choice = chunk.choices[0]
-            if choice.delta.content:
-                message_chunk = AIMessageChunk(content=choice.delta.content)
+            # Build message chunk with usage metadata if available
+            chunk_kwargs: dict[str, Any] = {"content": content}
 
+            if hasattr(chunk, "usage") and chunk.usage:
+                chunk_kwargs["usage_metadata"] = {
+                    "input_tokens": chunk.usage.prompt_tokens,
+                    "output_tokens": chunk.usage.completion_tokens,
+                    "total_tokens": chunk.usage.total_tokens,
+                }
+
+            message_chunk = AIMessageChunk(
+                content=content,
+                usage_metadata=chunk_kwargs.get("usage_metadata"),
+                response_metadata={"model_name": self.model_name},
+            )
+
+            if content:
                 if run_manager:
                     run_manager.on_llm_new_token(
-                        choice.delta.content,
+                        content,
                         chunk=ChatGenerationChunk(message=message_chunk),
                     )
 
-                yield ChatGenerationChunk(message=message_chunk)
+            # Always yield, even if no content (e.g., for usage metadata)
+            yield ChatGenerationChunk(message=message_chunk)
 
     async def _astream(
         self,
@@ -780,20 +804,36 @@ class ChatAmazonNova(BaseChatModel):
             raise nova_exception from e
 
         async for chunk in stream:
-            if not chunk.choices:
-                continue
+            # Get content from delta if choices exist
+            choice = chunk.choices[0] if chunk.choices else None
+            content = choice.delta.content if choice else ""
+            content = content or ""
 
-            choice = chunk.choices[0]
-            if choice.delta.content:
-                message_chunk = AIMessageChunk(content=choice.delta.content)
+            # Build message chunk with usage metadata if available
+            chunk_kwargs: dict[str, Any] = {"content": content}
 
+            if hasattr(chunk, "usage") and chunk.usage:
+                chunk_kwargs["usage_metadata"] = {
+                    "input_tokens": chunk.usage.prompt_tokens,
+                    "output_tokens": chunk.usage.completion_tokens,
+                    "total_tokens": chunk.usage.total_tokens,
+                }
+
+            message_chunk = AIMessageChunk(
+                content=content,
+                usage_metadata=chunk_kwargs.get("usage_metadata"),
+                response_metadata={"model_name": self.model_name},
+            )
+
+            if content:
                 if run_manager:
                     await run_manager.on_llm_new_token(
-                        choice.delta.content,
+                        content,
                         chunk=ChatGenerationChunk(message=message_chunk),
                     )
 
-                yield ChatGenerationChunk(message=message_chunk)
+            # Always yield, even if no content (e.g., for usage metadata)
+            yield ChatGenerationChunk(message=message_chunk)
 
 
 __all__ = ["ChatAmazonNova"]

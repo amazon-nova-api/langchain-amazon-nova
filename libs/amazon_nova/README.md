@@ -1,4 +1,4 @@
-# langchain-nova
+# langchain-amazon-nova
 
 Official LangChain integration for Amazon Nova models.
 
@@ -7,13 +7,13 @@ Amazon Nova is a family of state-of-the-art foundation models from AWS that incl
 ## Installation
 
 ```bash
-pip install -U langchain-nova
+pip install -U langchain-amazon-nova
 ```
 
 Or using uv:
 
 ```bash
-uv add langchain-nova
+uv add langchain-amazon-nova
 ```
 
 ## Quick Start

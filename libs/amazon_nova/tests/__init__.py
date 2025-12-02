@@ -1,1 +1,1 @@
-"""Tests for langchain-nova."""
+"""Tests for langchain-amazon-nova."""

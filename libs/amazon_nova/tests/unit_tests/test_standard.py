@@ -27,7 +27,7 @@ class TestChatAmazonNovaUnit(ChatModelUnitTests):
         """Return initialization parameters for the chat model."""
         return {
             "model": "nova-pro-v1",
-            "temperature": 0,
+            "temperature": 0.7,
             "api_key": "test-api-key",
         }
 

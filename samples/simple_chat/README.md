@@ -1,6 +1,6 @@
 # Simple Chat Examples
 
-Basic examples demonstrating langchain-nova usage patterns.
+Basic examples demonstrating langchain-amazon-nova usage patterns.
 
 ## Setup
 
