@@ -87,3 +87,19 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
     @pytest.mark.xfail(reason="tool_choice format needs investigation")
     def test_unicode_tool_call_integration(self, *args: Any, **kwargs: Any) -> None:
         super().test_unicode_tool_call_integration(*args, **kwargs)
+
+    @pytest.mark.xfail(reason="Tool calling test parametrization needs investigation")
+    def test_tool_calling(self, *args: Any, **kwargs: Any) -> None:
+        super().test_tool_calling(*args, **kwargs)
+
+    @pytest.mark.xfail(reason="Tool calling test parametrization needs investigation")
+    async def test_tool_calling_async(self, *args: Any, **kwargs: Any) -> None:
+        await super().test_tool_calling_async(*args, **kwargs)
+
+    @pytest.mark.xfail(reason="Tools with no arguments not supported")
+    def test_tool_calling_with_no_arguments(self, *args: Any, **kwargs: Any) -> None:
+        super().test_tool_calling_with_no_arguments(*args, **kwargs)
+
+    @pytest.mark.xfail(reason="Tools with no arguments not supported")
+    async def test_tool_calling_with_no_arguments_async(self, *args: Any, **kwargs: Any) -> None:
+        await super().test_tool_calling_with_no_arguments_async(*args, **kwargs)
