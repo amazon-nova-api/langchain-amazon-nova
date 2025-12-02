@@ -156,7 +156,7 @@ jobs:
           NOVA_API_KEY: ${{ secrets.NOVA_API_KEY }}
         run: |
           uv sync --group test --group test_integration
-          make integration_tests && exit 0
+          make integration_tests
         working-directory: ${{ inputs.working-directory }}
 
       - name: Get minimum versions
@@ -196,8 +196,6 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Set up Python + uv
         uses: "./.github/actions/uv_setup"
         with:
