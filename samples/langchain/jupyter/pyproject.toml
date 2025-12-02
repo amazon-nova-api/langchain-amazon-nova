@@ -1,5 +1,5 @@
 [project]
-name = "langchain-nova-samples-jupyter"
+name = "langchain-amazon-nova-samples-jupyter"
 version = "0.1.0"
 description = "Jupyter notebook examples using LangChain with Amazon Nova"
 classifiers = [

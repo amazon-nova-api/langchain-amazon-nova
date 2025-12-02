@@ -1,5 +1,5 @@
 [project]
-name = "langchain-nova-samples-python"
+name = "langchain-amazon-nova-samples-python"
 version = "0.1.0"
 description = "Python examples using LangChain with Amazon Nova"
 classifiers = [

@@ -30,7 +30,7 @@ Each directory has its own `pyproject.toml` for managing virtual environments:
 
 ```bash
 # Example: LangGraph Python samples
-git clone https://github.com/nova-ai-api/langchain-nova.git
+git clone https://github.com/amazon-nova-api/langchain-amazon-nova.git
 cd samples/simple_chat
 python3 -m venv .venv
 source .venv/bin/activate
@@ -88,4 +88,4 @@ Each has its own dependency management via `pyproject.toml`, so you can keep env
 
 ## Documentation
 
-For full API documentation, see the [langchain-nova package](../amazon_nova/README.md).
+For full API documentation, see the [langchain-amazon-nova package](../amazon_nova/README.md).

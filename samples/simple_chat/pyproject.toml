@@ -1,7 +1,7 @@
 [project]
-name = "langchain-nova-samples"
+name = "langchain-amazon-nova-samples"
 version = "0.1.0"
-description = "Sample code demonstrating langchain-nova usage"
+description = "Sample code demonstrating langchain-amazon-nova usage"
 readme = "README.md"
 classifiers = [
     "Private :: Do Not Upload",
