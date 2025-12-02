@@ -196,11 +196,6 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
 
     steps:
-      - name: Set up Python + uv
-        uses: "./.github/actions/uv_setup"
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
       - uses: actions/download-artifact@v4
         with:
           name: dist
