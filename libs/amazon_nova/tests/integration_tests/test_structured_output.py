@@ -106,12 +106,6 @@ class TestStructuredOutputIntegration:
         assert result.name == "Sarah"
         assert result.age == 28
 
-    @pytest.mark.xfail(
-        reason=(
-            "Streaming structured output not supported - "
-            "tool calls only arrive in final chunk"
-        )
-    )
     def test_structured_output_streaming(self, llm: ChatAmazonNova) -> None:
         """Test structured output with streaming."""
         structured_llm = llm.with_structured_output(Person)

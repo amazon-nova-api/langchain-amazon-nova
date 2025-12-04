@@ -842,6 +842,32 @@ class ChatAmazonNova(BaseChatModel):
             # Build message chunk with usage metadata if available
             chunk_kwargs: dict[str, Any] = {"content": content}
 
+            # Handle streaming tool calls
+            if (
+                choice
+                and hasattr(choice.delta, "tool_calls")
+                and choice.delta.tool_calls
+            ):
+                chunk_kwargs["tool_call_chunks"] = [
+                    {
+                        "name": (
+                            tc.function.name
+                            if tc.function
+                            and hasattr(tc.function, "name")
+                            and tc.function.name
+                            else None
+                        ),
+                        "args": (
+                            tc.function.arguments
+                            if tc.function and hasattr(tc.function, "arguments")
+                            else None
+                        ),
+                        "id": tc.id if hasattr(tc, "id") else None,
+                        "index": tc.index if hasattr(tc, "index") else None,
+                    }
+                    for tc in choice.delta.tool_calls
+                ]
+
             if hasattr(chunk, "usage") and chunk.usage:
                 chunk_kwargs["usage_metadata"] = {
                     "input_tokens": chunk.usage.prompt_tokens,
@@ -850,7 +876,8 @@ class ChatAmazonNova(BaseChatModel):
                 }
 
             message_chunk = AIMessageChunk(
-                content=content,
+                content=chunk_kwargs.get("content", ""),
+                tool_call_chunks=chunk_kwargs.get("tool_call_chunks", []),
                 usage_metadata=chunk_kwargs.get("usage_metadata"),
                 response_metadata={"model_name": self.model_name},
             )
@@ -905,6 +932,32 @@ class ChatAmazonNova(BaseChatModel):
             # Build message chunk with usage metadata if available
             chunk_kwargs: dict[str, Any] = {"content": content}
 
+            # Handle streaming tool calls
+            if (
+                choice
+                and hasattr(choice.delta, "tool_calls")
+                and choice.delta.tool_calls
+            ):
+                chunk_kwargs["tool_call_chunks"] = [
+                    {
+                        "name": (
+                            tc.function.name
+                            if tc.function
+                            and hasattr(tc.function, "name")
+                            and tc.function.name
+                            else None
+                        ),
+                        "args": (
+                            tc.function.arguments
+                            if tc.function and hasattr(tc.function, "arguments")
+                            else None
+                        ),
+                        "id": tc.id if hasattr(tc, "id") else None,
+                        "index": tc.index if hasattr(tc, "index") else None,
+                    }
+                    for tc in choice.delta.tool_calls
+                ]
+
             if hasattr(chunk, "usage") and chunk.usage:
                 chunk_kwargs["usage_metadata"] = {
                     "input_tokens": chunk.usage.prompt_tokens,
@@ -913,7 +966,8 @@ class ChatAmazonNova(BaseChatModel):
                 }
 
             message_chunk = AIMessageChunk(
-                content=content,
+                content=chunk_kwargs.get("content", ""),
+                tool_call_chunks=chunk_kwargs.get("tool_call_chunks", []),
                 usage_metadata=chunk_kwargs.get("usage_metadata"),
                 response_metadata={"model_name": self.model_name},
             )

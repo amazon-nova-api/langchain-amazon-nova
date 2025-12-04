@@ -65,24 +65,6 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
         return True
 
     @pytest.mark.xfail(
-        reason=(
-            "Streaming structured output not supported - "
-            "tool calls only arrive in final chunk"
-        )
-    )
-    def test_structured_output(self, *args: Any, **kwargs: Any) -> None:
-        super().test_structured_output(*args, **kwargs)
-
-    @pytest.mark.xfail(
-        reason=(
-            "Streaming structured output not supported - "
-            "tool calls only arrive in final chunk"
-        )
-    )
-    async def test_structured_output_async(self, *args: Any, **kwargs: Any) -> None:
-        await super().test_structured_output_async(*args, **kwargs)
-
-    @pytest.mark.xfail(
         reason="Pydantic v1 models return dict instead of model instance"
     )
     def test_structured_output_pydantic_2_v1(self, *args: Any, **kwargs: Any) -> None:
