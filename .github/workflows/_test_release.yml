@@ -12,33 +12,24 @@ on:
         type: boolean
         default: false
         description: "Release from a non-master branch (danger!)"
-  workflow_dispatch:
-    inputs:
-      working-directory:
-        required: true
-        type: string
-        default: "libs/amazon_nova"
-      dangerous-nonmaster-release:
-        required: false
-        type: boolean
-        default: false
-        description: "Release from a non-master branch (danger!)"
 
 env:
-  PYTHON_VERSION: "3.11"
-  UV_FROZEN: "true"
+  PYTHON_VERSION: "3.13"
 
 jobs:
   build:
     if: github.ref == 'refs/heads/main' || inputs.dangerous-nonmaster-release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # Needed for actions/upload-artifact
 
     outputs:
       pkg-name: ${{ steps.check-version.outputs.pkg-name }}
       version: ${{ steps.check-version.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python + uv
         uses: "./.github/actions/uv_setup"
@@ -61,25 +52,18 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
 
       - name: Upload build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-dist
           path: ${{ inputs.working-directory }}/dist/
 
       - name: Check Version
         id: check-version
-        shell: python
+        shell: bash
         working-directory: ${{ inputs.working-directory }}
         run: |
-          import os
-          import tomllib
-          with open("pyproject.toml", "rb") as f:
-              data = tomllib.load(f)
-          pkg_name = data["project"]["name"]
-          version = data["project"]["version"]
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"pkg-name={pkg_name}\n")
-              f.write(f"version={version}\n")
+          echo "pkg-name=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"], end="")')" >> "$GITHUB_OUTPUT"
+          echo "version=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"], end="")')" >> "$GITHUB_OUTPUT"
 
   publish:
     needs:
@@ -92,11 +76,13 @@ jobs:
       # Trusted publishing has to also be configured on PyPI for each package:
       # https://docs.pypi.org/trusted-publishers/adding-a-publisher/
       id-token: write
+      contents: read
+      actions: read # Needed for actions/download-artifact
 
     steps:
-      # - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: test-dist
           path: ${{ inputs.working-directory }}/dist/
@@ -113,5 +99,4 @@ jobs:
           # This is *only for CI use* and is *extremely dangerous* otherwise!
           # https://github.com/pypa/gh-action-pypi-publish#tolerating-release-package-file-duplicates
           skip-existing: true
-          # Temp workaround since attestations are on by default as of gh-action-pypi-publish v1.11.0
           attestations: false
