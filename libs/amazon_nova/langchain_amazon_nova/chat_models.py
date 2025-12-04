@@ -361,19 +361,23 @@ class ChatAmazonNova(BaseChatModel):
 
         Args:
             tools: List of tools to bind. Can be LangChain tools, Pydantic models, or dicts.
-            strict: If True, validate that the model supports tool calling. Default True.
+            tool_choice: Control tool calling behavior.
+                Supported values: "auto" (default), "required", "none"
             **kwargs: Additional arguments passed to the model.
                 For available parameters, see https://nova.amazon.com/dev/documentation
 
         Returns:
             New ChatAmazonNova instance with tools bound.
-
-        Raises:
-            ValueError: If strict=True and the model doesn't support tool calling.
         """  # noqa: E501
+        # Validate tool_choice
+        if tool_choice is not None and tool_choice not in ["auto", "required", "none"]:
+            raise ValueError(
+                f"tool_choice must be one of 'auto', 'required', or 'none'. "
+                f"Got: {tool_choice}"
+            )
 
         formatted_tools = [convert_to_nova_tool(tool) for tool in tools]
-        return self.bind(tools=formatted_tools, **kwargs)
+        return self.bind(tools=formatted_tools, tool_choice=tool_choice, **kwargs)
 
     def with_structured_output(
         self,
@@ -446,7 +450,19 @@ class ChatAmazonNova(BaseChatModel):
         tool_name = tool["function"]["name"]
 
         # Bind tool with tool_choice to force its use
-        llm_with_tool = self.bind_tools([tool], tool_choice="auto", **kwargs)
+        # Include ls_structured_output_format for LangSmith tracking
+        try:
+            llm_with_tool = self.bind_tools(
+                [tool],
+                tool_choice="required",
+                ls_structured_output_format={
+                    "kwargs": {"method": "function_calling"},
+                    "schema": tool,
+                },
+                **kwargs,
+            )
+        except Exception:
+            llm_with_tool = self.bind_tools([tool], tool_choice="required", **kwargs)
 
         # Choose parser based on schema type
         if isinstance(schema, type) and issubclass(schema, BaseModel):
@@ -470,6 +486,50 @@ class ChatAmazonNova(BaseChatModel):
             return RunnableMap(raw=llm_with_tool) | parser_with_fallback
 
         return llm_with_tool | output_parser
+
+    def _prepare_params(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]],
+        stream: bool,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Prepare parameters for API call, handling LangChain-specific kwargs.
+
+        Args:
+            messages: Messages to send
+            stop: Optional stop sequences
+            stream: Whether to stream
+            **kwargs: Additional parameters
+
+        Returns:
+            Parameters dict ready for OpenAI API call
+        """
+        openai_messages = self._convert_messages_to_nova_format(messages)
+
+        # Separate LangChain-specific kwargs from API kwargs
+        ls_kwargs = {k: v for k, v in kwargs.items() if k.startswith("ls_")}
+        api_kwargs = {k: v for k, v in kwargs.items() if not k.startswith("ls_")}
+
+        params = {
+            **self._default_params,
+            **api_kwargs,
+            "messages": openai_messages,
+            "stream": stream,
+        }
+
+        # Add LangSmith kwargs to extra_headers if present
+        if ls_kwargs:
+            params.setdefault("extra_headers", {}).update(ls_kwargs)
+
+        # Handle max_completion_tokens precedence over max_tokens
+        if "max_completion_tokens" in params:
+            params.pop("max_tokens", None)
+
+        if stop is not None:
+            params["stop"] = stop
+
+        return params
 
     def _convert_messages_to_nova_format(
         self, messages: List[BaseMessage]
@@ -628,22 +688,7 @@ class ChatAmazonNova(BaseChatModel):
         Returns:
             ChatResult with generated message and metadata.
         """
-        openai_messages = self._convert_messages_to_nova_format(messages)
-
-        # Merge model-level defaults with invoke-level kwargs
-        params = {
-            **self._default_params,
-            **kwargs,
-            "messages": openai_messages,
-            "stream": False,
-        }
-
-        # Handle max_completion_tokens precedence over max_tokens
-        if "max_completion_tokens" in params:
-            params.pop("max_tokens", None)
-
-        if stop is not None:
-            params["stop"] = stop
+        params = self._prepare_params(messages, stop, stream=False, **kwargs)
 
         try:
             response = self.client.chat.completions.create(**params)
@@ -710,22 +755,7 @@ class ChatAmazonNova(BaseChatModel):
         Returns:
             ChatResult with generated message and metadata.
         """
-        openai_messages = self._convert_messages_to_nova_format(messages)
-
-        # Merge model-level defaults with invoke-level kwargs
-        params = {
-            **self._default_params,
-            **kwargs,
-            "messages": openai_messages,
-            "stream": False,
-        }
-
-        # Handle max_completion_tokens precedence over max_tokens
-        if "max_completion_tokens" in params:
-            params.pop("max_tokens", None)
-
-        if stop is not None:
-            params["stop"] = stop
+        params = self._prepare_params(messages, stop, stream=False, **kwargs)
 
         try:
             response = await self.async_client.chat.completions.create(**params)
@@ -792,22 +822,7 @@ class ChatAmazonNova(BaseChatModel):
         Yields:
             ChatGenerationChunk objects with streamed content.
         """
-        openai_messages = self._convert_messages_to_nova_format(messages)
-
-        # Merge model-level defaults with invoke-level kwargs
-        params = {
-            **self._default_params,
-            **kwargs,
-            "messages": openai_messages,
-            "stream": True,
-        }
-
-        # Handle max_completion_tokens precedence over max_tokens
-        if "max_completion_tokens" in params:
-            params.pop("max_tokens", None)
-
-        if stop is not None:
-            params["stop"] = stop
+        params = self._prepare_params(messages, stop, stream=True, **kwargs)
 
         try:
             stream = self.client.chat.completions.create(**params)
@@ -870,22 +885,7 @@ class ChatAmazonNova(BaseChatModel):
         Yields:
             ChatGenerationChunk objects with streamed content.
         """
-        openai_messages = self._convert_messages_to_nova_format(messages)
-
-        # Merge model-level defaults with invoke-level kwargs
-        params = {
-            **self._default_params,
-            **kwargs,
-            "messages": openai_messages,
-            "stream": True,
-        }
-
-        # Handle max_completion_tokens precedence over max_tokens
-        if "max_completion_tokens" in params:
-            params.pop("max_tokens", None)
-
-        if stop is not None:
-            params["stop"] = stop
+        params = self._prepare_params(messages, stop, stream=True, **kwargs)
 
         try:
             stream = await self.async_client.chat.completions.create(**params)

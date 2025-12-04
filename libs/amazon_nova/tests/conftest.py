@@ -46,7 +46,7 @@ def fetch_available_models() -> List[str]:
 def available_models() -> List[str]:
     """Fixture providing list of available Nova models."""
     # return fetch_available_models()
-    return ["nova-pro-v1", "nova-micro-v1", "nova-lite-v1"]
+    return ["nova-pro-v1", "nova-micro-v1", "nova-lite-v1", "nova-2-lite-v1"]
 
 
 @pytest.fixture(scope="session")

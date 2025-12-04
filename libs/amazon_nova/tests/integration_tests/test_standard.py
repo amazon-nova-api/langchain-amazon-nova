@@ -35,6 +35,11 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
         return True
 
     @property
+    def supports_tool_choice_values(self) -> list:
+        """Tool choice values supported by Nova."""
+        return ["auto", "required", "none"]
+
+    @property
     def supports_image_inputs(self) -> bool:
         """Whether the model supports image inputs."""
         return True  # Nova Pro, Lite, and Premier support vision
@@ -58,6 +63,54 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
     def returns_usage_metadata(self) -> bool:
         """Whether the model returns usage metadata."""
         return True
+
+    @pytest.mark.xfail(
+        reason=(
+            "Streaming structured output not supported - "
+            "tool calls only arrive in final chunk"
+        )
+    )
+    def test_structured_output(self, *args: Any, **kwargs: Any) -> None:
+        super().test_structured_output(*args, **kwargs)
+
+    @pytest.mark.xfail(
+        reason=(
+            "Streaming structured output not supported - "
+            "tool calls only arrive in final chunk"
+        )
+    )
+    async def test_structured_output_async(self, *args: Any, **kwargs: Any) -> None:
+        await super().test_structured_output_async(*args, **kwargs)
+
+    @pytest.mark.xfail(
+        reason="Pydantic v1 models return dict instead of model instance"
+    )
+    def test_structured_output_pydantic_2_v1(self, *args: Any, **kwargs: Any) -> None:
+        super().test_structured_output_pydantic_2_v1(*args, **kwargs)
+
+    @pytest.mark.xfail(
+        reason=(
+            "tool_choice='any' not supported - Nova only supports 'auto', 'required', 'none'"
+        )
+    )
+    def test_structured_few_shot_examples(self, *args: Any, **kwargs: Any) -> None:
+        super().test_structured_few_shot_examples(*args, **kwargs)
+
+    @pytest.mark.xfail(
+        reason=(
+            "tool_choice='any' not supported - Nova only supports 'auto', 'required', 'none'"
+        )
+    )
+    def test_tool_choice(self, *args: Any, **kwargs: Any) -> None:
+        super().test_tool_choice(*args, **kwargs)
+
+    @pytest.mark.xfail(
+        reason=(
+            "tool_choice='any' not supported - Nova only supports 'auto', 'required', 'none'"
+        )
+    )
+    def test_bind_runnables_as_tools(self, *args: Any, **kwargs: Any) -> None:
+        super().test_bind_runnables_as_tools(*args, **kwargs)
 
     @pytest.mark.xfail(reason="JSON mode not implemented")
     def test_json_mode(self, *args: Any, **kwargs: Any) -> None:
