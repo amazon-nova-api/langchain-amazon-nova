@@ -23,12 +23,14 @@ from langchain_core.callbacks import (
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models import (
+    LanguageModelInput,
     ModelProfile,
     ModelProfileRegistry,
 )
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
+from langchain_core.runnables import Runnable, RunnableMap, RunnablePassthrough
 from langchain_core.utils import (
     convert_to_secret_str,
     secret_from_env,
@@ -352,8 +354,9 @@ class ChatAmazonNova(BaseChatModel):
     def bind_tools(
         self,
         tools: Sequence[Union[Dict[str, Any], Type[Any], Any]],
+        tool_choice: Optional[str] = "auto",
         **kwargs: Any,
-    ) -> Any:
+    ) -> Runnable[LanguageModelInput, AIMessage]:
         """Bind tools to the model.
 
         Args:
@@ -372,11 +375,101 @@ class ChatAmazonNova(BaseChatModel):
         formatted_tools = [convert_to_nova_tool(tool) for tool in tools]
         return self.bind(tools=formatted_tools, **kwargs)
 
-    def with_structured_output(self, schema: Any, **kwargs: Any) -> Any:
-        """Not implemented yet for Nova."""
-        raise NotImplementedError(
-            "with_structured_output is not yet implemented for ChatAmazonNova"
+    def with_structured_output(
+        self,
+        schema: Union[Dict[str, Any], Type[Any]],
+        *,
+        include_raw: bool = False,
+        **kwargs: Any,
+    ) -> Runnable:
+        """Structure model output using tool calling.
+
+        Args:
+            schema: Output schema as Pydantic model or JSON schema dict.
+                If dict, must have 'title' and 'properties' keys.
+            include_raw: If True, return dict with 'raw' and 'parsed' keys.
+                If False (default), return only the parsed output.
+            **kwargs: Additional arguments passed to bind_tools.
+
+        Returns:
+            Runnable that outputs structured data according to schema.
+            If include_raw=True, returns dict with 'raw' (AIMessage) and
+            'parsed' (structured output) keys.
+
+        Raises:
+            ValueError: If model doesn't support tool calling.
+
+        Examples:
+            Using Pydantic model:
+
+            .. code-block:: python
+
+                from pydantic import BaseModel
+                from langchain_amazon_nova import ChatAmazonNova
+
+                class Person(BaseModel):
+                    name: str
+                    age: int
+
+                llm = ChatAmazonNova(model="nova-pro-v1")
+                structured_llm = llm.with_structured_output(Person)
+                result = structured_llm.invoke("John is 30 years old")
+                # result is a Person instance: Person(name="John", age=30)
+
+            Using JSON schema:
+
+            .. code-block:: python
+
+                schema = {
+                    "title": "Person",
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "age": {"type": "integer"}
+                    },
+                    "required": ["name", "age"]
+                }
+
+                structured_llm = llm.with_structured_output(schema)
+                result = structured_llm.invoke("John is 30 years old")
+                # result is a dict: {"name": "John", "age": 30}
+        """  # noqa: E501
+        from langchain_core.output_parsers.openai_tools import (
+            JsonOutputKeyToolsParser,
+            PydanticToolsParser,
         )
+        from langchain_core.utils.function_calling import convert_to_openai_tool
+        from pydantic import BaseModel
+
+        # Convert schema to tool format
+        tool = convert_to_openai_tool(schema)
+        tool_name = tool["function"]["name"]
+
+        # Bind tool with tool_choice to force its use
+        llm_with_tool = self.bind_tools([tool], tool_choice="auto", **kwargs)
+
+        # Choose parser based on schema type
+        if isinstance(schema, type) and issubclass(schema, BaseModel):
+            output_parser: Union[PydanticToolsParser, JsonOutputKeyToolsParser] = (
+                PydanticToolsParser(tools=[schema], first_tool_only=True)
+            )
+        else:
+            output_parser = JsonOutputKeyToolsParser(
+                key_name=tool_name, first_tool_only=True
+            )
+
+        if include_raw:
+            parser_assign = RunnablePassthrough.assign(
+                parsed=lambda x: output_parser.invoke(x["raw"]),
+                parsing_error=lambda _: None,
+            )
+            parser_none = RunnablePassthrough.assign(parsed=lambda _: None)
+            parser_with_fallback = parser_assign.with_fallbacks(
+                [parser_none], exception_key="parsing_error"
+            )
+            return RunnableMap(raw=llm_with_tool) | parser_with_fallback
+
+        return llm_with_tool | output_parser
 
     def _convert_messages_to_nova_format(
         self, messages: List[BaseMessage]

@@ -59,27 +59,6 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
         """Whether the model returns usage metadata."""
         return True
 
-    # Override to indicate structured output is not supported
-    @pytest.mark.xfail(reason="with_structured_output not implemented")
-    def test_structured_output(self, *args: Any, **kwargs: Any) -> None:
-        super().test_structured_output(*args, **kwargs)
-
-    @pytest.mark.xfail(reason="with_structured_output not implemented")
-    async def test_structured_output_async(self, *args: Any, **kwargs: Any) -> None:
-        await super().test_structured_output_async(*args, **kwargs)
-
-    @pytest.mark.xfail(reason="with_structured_output not implemented")
-    def test_structured_output_pydantic_2_v1(self, *args: Any, **kwargs: Any) -> None:
-        super().test_structured_output_pydantic_2_v1(*args, **kwargs)
-
-    @pytest.mark.xfail(reason="with_structured_output not implemented")
-    def test_structured_output_optional_param(self, *args: Any, **kwargs: Any) -> None:
-        super().test_structured_output_optional_param(*args, **kwargs)
-
-    @pytest.mark.xfail(reason="with_structured_output not implemented")
-    def test_structured_few_shot_examples(self, *args: Any, **kwargs: Any) -> None:
-        super().test_structured_few_shot_examples(*args, **kwargs)
-
     @pytest.mark.xfail(reason="JSON mode not implemented")
     def test_json_mode(self, *args: Any, **kwargs: Any) -> None:
         super().test_json_mode(*args, **kwargs)
