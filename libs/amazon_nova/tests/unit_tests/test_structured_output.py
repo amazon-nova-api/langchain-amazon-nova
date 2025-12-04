@@ -59,29 +59,29 @@ class TestWithStructuredOutput:
         llm = ChatAmazonNova(model="nova-pro-v1", api_key="test-key")
         structured_llm = llm.with_structured_output(Person, include_raw=True)
 
-        # With include_raw=True, should return a dict-like structure
-        assert isinstance(structured_llm, dict)
-        assert "raw" in structured_llm
-        assert "parsed" in structured_llm
+        # With include_raw=True, should return a Runnable that outputs dict
+        assert hasattr(structured_llm, "invoke")
 
     @patch("openai.OpenAI")
     def test_with_structured_output_invocation(self, mock_openai: Mock) -> None:
         """Test actual invocation of structured output."""
+        # Create properly structured mock for tool call
+        function_mock = Mock()
+        function_mock.name = "Person"
+        function_mock.arguments = '{"name": "John", "age": 30}'
+
+        tool_call_mock = Mock()
+        tool_call_mock.id = "call_123"
+        tool_call_mock.type = "function"
+        tool_call_mock.function = function_mock
+
         # Mock the OpenAI client response
         mock_response = Mock()
         mock_response.choices = [
             Mock(
                 message=Mock(
                     content="",
-                    tool_calls=[
-                        Mock(
-                            id="call_123",
-                            function=Mock(
-                                name="Person",
-                                arguments='{"name": "John", "age": 30}',
-                            ),
-                        )
-                    ],
+                    tool_calls=[tool_call_mock],
                 ),
                 finish_reason="tool_calls",
             )
@@ -111,21 +111,23 @@ class TestWithStructuredOutput:
         self, mock_openai: Mock
     ) -> None:
         """Test actual invocation with JSON schema."""
+        # Create properly structured mock for tool call
+        function_mock = Mock()
+        function_mock.name = "Person"
+        function_mock.arguments = '{"name": "Jane", "age": 25}'
+
+        tool_call_mock = Mock()
+        tool_call_mock.id = "call_123"
+        tool_call_mock.type = "function"
+        tool_call_mock.function = function_mock
+
         # Mock the OpenAI client response
         mock_response = Mock()
         mock_response.choices = [
             Mock(
                 message=Mock(
                     content="",
-                    tool_calls=[
-                        Mock(
-                            id="call_123",
-                            function=Mock(
-                                name="Person",
-                                arguments='{"name": "Jane", "age": 25}',
-                            ),
-                        )
-                    ],
+                    tool_calls=[tool_call_mock],
                 ),
                 finish_reason="tool_calls",
             )
@@ -165,21 +167,23 @@ class TestWithStructuredOutput:
         self, mock_openai: Mock
     ) -> None:
         """Test invocation with include_raw=True."""
+        # Create properly structured mock for tool call
+        function_mock = Mock()
+        function_mock.name = "Person"
+        function_mock.arguments = '{"name": "Bob", "age": 35}'
+
+        tool_call_mock = Mock()
+        tool_call_mock.id = "call_123"
+        tool_call_mock.type = "function"
+        tool_call_mock.function = function_mock
+
         # Mock the OpenAI client response
         mock_response = Mock()
         mock_response.choices = [
             Mock(
                 message=Mock(
                     content="",
-                    tool_calls=[
-                        Mock(
-                            id="call_123",
-                            function=Mock(
-                                name="Person",
-                                arguments='{"name": "Bob", "age": 35}',
-                            ),
-                        )
-                    ],
+                    tool_calls=[tool_call_mock],
                 ),
                 finish_reason="tool_calls",
             )

@@ -90,7 +90,8 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
 
     @pytest.mark.xfail(
         reason=(
-            "tool_choice='any' not supported - Nova only supports 'auto', 'required', 'none'"
+            "tool_choice='any' not supported - "
+            "Nova only supports 'auto', 'required', 'none'"
         )
     )
     def test_structured_few_shot_examples(self, *args: Any, **kwargs: Any) -> None:
@@ -98,7 +99,8 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
 
     @pytest.mark.xfail(
         reason=(
-            "tool_choice='any' not supported - Nova only supports 'auto', 'required', 'none'"
+            "tool_choice='any' not supported - "
+            "Nova only supports 'auto', 'required', 'none'"
         )
     )
     def test_tool_choice(self, *args: Any, **kwargs: Any) -> None:
@@ -106,7 +108,8 @@ class TestChatAmazonNovaIntegration(ChatModelIntegrationTests):
 
     @pytest.mark.xfail(
         reason=(
-            "tool_choice='any' not supported - Nova only supports 'auto', 'required', 'none'"
+            "tool_choice='any' not supported - "
+            "Nova only supports 'auto', 'required', 'none'"
         )
     )
     def test_bind_runnables_as_tools(self, *args: Any, **kwargs: Any) -> None:
