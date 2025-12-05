@@ -1,6 +1,6 @@
 """Standard unit tests for ChatAmazonNova using langchain-tests."""
 
-from typing import Type
+from typing import Any, Type
 
 import pytest
 from langchain_core.language_models import BaseChatModel
@@ -19,8 +19,8 @@ class TestChatAmazonNovaUnit(ChatModelUnitTests):
 
     @property
     def has_structured_output(self) -> bool:
-        """Structured output not yet implemented."""
-        return False
+        """Structured output is implemented."""
+        return True
 
     @property
     def chat_model_params(self) -> dict:
@@ -31,7 +31,16 @@ class TestChatAmazonNovaUnit(ChatModelUnitTests):
             "api_key": "test-api-key",
         }
 
-    @pytest.mark.xfail(reason="with_structured_output not yet implemented")
-    def test_with_structured_output(self) -> None:
-        """Structured output test not yet implemented."""
-        pass
+    @property
+    def supports_tool_choice_values(self) -> list:
+        """Tool choice values supported by Nova."""
+        return ["auto", "required", "none"]
+
+    @pytest.mark.xfail(
+        reason=(
+            "tool_choice='any' not supported - "
+            "Nova only supports 'auto', 'required', 'none'"
+        )
+    )
+    def test_bind_tool_pydantic(self, *args: Any, **kwargs: Any) -> None:
+        super().test_bind_tool_pydantic(*args, **kwargs)
